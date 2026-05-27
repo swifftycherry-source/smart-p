@@ -178,7 +178,7 @@ select.finput{cursor:pointer}
 </style>
 </head>
 <body>
-
+ 
 <div id="splash">
   <div class="splash-logo">
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -190,9 +190,9 @@ select.finput{cursor:pointer}
   <p>Smart Phlebitis Assessment</p>
   <div class="splash-bar"><div class="splash-fill"></div></div>
 </div>
-
+ 
 <div id="app">
-
+ 
 <!-- SCAN SCREEN -->
 <div class="screen active" id="sc-scan">
 <div style="padding-bottom:16px">
@@ -297,7 +297,7 @@ select.finput{cursor:pointer}
   </div>
 </div>
 </div>
-
+ 
 <!-- HISTORY SCREEN -->
 <div class="screen" id="sc-history">
 <div style="padding-bottom:16px">
@@ -326,7 +326,7 @@ select.finput{cursor:pointer}
   </div>
 </div>
 </div>
-
+ 
 <!-- SCALE SCREEN -->
 <div class="screen" id="sc-scale">
 <div style="padding-bottom:16px">
@@ -347,7 +347,7 @@ select.finput{cursor:pointer}
   <div style="height:16px"></div>
 </div>
 </div>
-
+ 
 <!-- QR SCREEN -->
 <div class="screen" id="sc-qr">
 <div style="padding-bottom:16px">
@@ -449,16 +449,16 @@ function doGet(e) {
   <div style="height:16px"></div>
 </div>
 </div>
-
+ 
 </div><!-- /app -->
-
+ 
 <nav class="bnav">
   <button class="ntab active" onclick="goTo('scan')" id="nav-scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg><span>สแกน</span></button>
   <button class="ntab" onclick="goTo('history')" id="nav-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>ประวัติ</span></button>
   <button class="ntab" onclick="goTo('scale')" id="nav-scale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>VIP Scale</span></button>
   <button class="ntab" onclick="goTo('qr')" id="nav-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h3M18 18v3M14 18h2v3"/></svg><span>แชร์</span></button>
 </nav>
-
+ 
 <!-- EDIT MODAL -->
 <div class="modal-bg" id="edit-modal">
   <div class="modal">
@@ -485,9 +485,9 @@ function doGet(e) {
     </div>
   </div>
 </div>
-
+ 
 <div class="toast-w" id="tw"></div>
-
+ 
 <script>
 var SHEET_ID='1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA';
 var S={site:'',grade:-1,imgB64:'',syms:{},history:JSON.parse(localStorage.getItem('ph_v3')||'[]'),gsUrl:localStorage.getItem('ph_gs3')||'',editIdx:-1,aiText:''};
@@ -501,7 +501,7 @@ var GRADES=[
 var GBG=['#D1FAE5','#FEF3C7','#FED7AA','#FECDD3','#FECACA'];
 var GTC=['#065F46','#92400E','#C2410C','#9F1239','#7F1D1D'];
 var histFilter='all';
-
+ 
 window.addEventListener('load',()=>{
   setTimeout(()=>{
     document.getElementById('splash').classList.add('hide');
@@ -798,3 +798,9 @@ document.getElementById('edit-modal').addEventListener('click',function(e){if(e.
 </script>
 </body>
 </html>
+
+
+    
+    
+      
+  
