@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SMART-P">
+<meta name="theme-color" content="#4F9CF9">
+<title>SMART-P — Smart Phlebitis Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --sky:#4F9CF9;--sky-dark:#2563EB;--sky-light:#EFF6FF;--sky-mid:#BFDBFE;
+  --teal:#14B8A6;--teal-light:#CCFBF1;--teal-dark:#0F766E;
+  --rose:#FB7185;--rose-light:#FFF1F2;--rose-dark:#BE123C;
+  --amber:#F59E0B;--amber-light:#FFFBEB;--amber-dark:#92400E;
+  --green:#22C55E;--green-light:#F0FDF4;--green-dark:#166534;
+  --purple:#A78BFA;--purple-light:#F5F3FF;--purple-dark:#6D28D9;
+  --bg:#F0F4FF;--surface:#FFFFFF;--surface2:#F8FAFF;
+  --border:rgba(79,156,249,0.15);--border-soft:rgba(0,0,0,0.07);
+  --text:#1E293B;--text2:#64748B;--text3:#94A3B8;
+  --r:16px;--r-sm:10px;--r-lg:22px;--r-xl:28px;
+  --shadow:0 4px 20px rgba(79,156,249,.12),0 1px 4px rgba(0,0,0,.06);
+  --shadow-sm:0 2px 10px rgba(0,0,0,.07);
+  --nav-h:72px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);font-size:15px;overscroll-behavior:none}
+#splash{position:fixed;inset:0;background:linear-gradient(145deg,#1D4ED8 0%,#0F766E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{width:88px;height:88px;background:rgba(255,255,255,.18);border-radius:26px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.5) rotate(-12deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+#splash h1{font-size:28px;font-weight:700;color:#fff}
+#splash p{font-size:13px;color:rgba(255,255,255,.65);margin-top:5px}
+.splash-bar{width:50px;height:4px;background:rgba(255,255,255,.25);border-radius:99px;margin-top:36px;overflow:hidden}
+.splash-fill{height:100%;background:#fff;border-radius:99px;animation:fill 2s ease forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+#app{height:100%;display:flex;flex-direction:column}
+.screen{position:absolute;inset:0;bottom:var(--nav-h);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;background:var(--bg)}
+.screen.active{display:block;animation:sIn .3s ease}
+@keyframes sIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.topbar{background:rgba(255,255,255,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:52px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left h2{font-size:18px;font-weight:700;color:var(--text)}
+.topbar-left p{font-size:11px;color:var(--text3);margin-top:1px}
+.icon-btn{width:38px;height:38px;border-radius:12px;border:none;background:var(--sky-light);color:var(--sky-dark);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.icon-btn:active{transform:scale(.9)}
+.bnav{height:var(--nav-h);background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 6px 8px;position:fixed;bottom:0;left:0;right:0;z-index:200;gap:2px}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border-radius:14px;cursor:pointer;transition:all .2s;gap:3px;border:none;background:transparent;color:var(--text3);font-family:'Prompt',sans-serif}
+.ntab.active{background:var(--sky-light);color:var(--sky-dark)}
+.ntab svg{width:22px;height:22px}
+.ntab span{font-size:10px;font-weight:500}
+.card{background:var(--surface);border-radius:var(--r-lg);padding:16px;margin:10px 14px 0;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title svg{width:17px;height:17px;color:var(--sky-dark);flex-shrink:0}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 14px 0}
+.stat-box{background:var(--surface);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+.stat-num{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
+.stat-label{font-size:10px;color:var(--text3);margin-top:4px;font-weight:500}
+.upload-z{border:2px dashed var(--sky-mid);border-radius:var(--r-lg);padding:24px 16px;text-align:center;cursor:pointer;background:var(--sky-light);transition:all .2s}
+.upload-z:active{transform:scale(.98)}
+.upload-icon{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 6px 20px rgba(79,156,249,.35)}
+.upload-icon svg{width:30px;height:30px;color:#fff}
+.upload-z h3{font-size:14px;font-weight:600;color:var(--sky-dark);margin-bottom:3px}
+.upload-z p{font-size:12px;color:var(--text2)}
+#prev-wrap{position:relative;border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px}
+#prev-img{width:100%;max-height:200px;object-fit:cover;display:none}
+.scan-ov{position:absolute;inset:0;display:none}
+.scan-ov.on{display:block}
+.scan-beam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--sky),var(--teal),transparent);animation:beam 1.4s ease-in-out infinite;box-shadow:0 0 10px rgba(79,156,249,.8)}
+@keyframes beam{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
+.corner{position:absolute;width:22px;height:22px;border-color:var(--sky);border-style:solid;border-radius:4px}
+.c-tl{top:8px;left:8px;border-width:3px 0 0 3px}
+.c-tr{top:8px;right:8px;border-width:3px 3px 0 0}
+.c-bl{bottom:8px;left:8px;border-width:0 0 3px 3px}
+.c-br{bottom:8px;right:8px;border-width:0 3px 3px 0}
+.ai-box{background:linear-gradient(135deg,#EFF6FF,#CCFBF1);border:1px solid var(--sky-mid);border-radius:var(--r-lg);padding:13px;display:none;margin-top:10px}
+.ai-box.show{display:block;animation:fu .4s ease}
+.ai-chip{display:inline-flex;align-items:center;gap:5px;background:var(--sky-dark);color:#fff;border-radius:99px;padding:4px 12px;font-size:11px;font-weight:500;margin-bottom:8px}
+.ai-chip svg{width:13px;height:13px}
+.ai-text{font-size:13px;color:#1E3A5F;line-height:1.7}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sym-item{border:1.5px solid var(--border-soft);border-radius:var(--r);padding:9px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);transition:all .16s;font-size:13px;color:var(--text2)}
+.sym-item.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:500}
+.sym-item:active{transform:scale(.95)}
+.sym-dot{width:8px;height:8px;border-radius:50%;background:var(--border-soft);flex-shrink:0;transition:all .16s}
+.sym-item.on .sym-dot{background:var(--sky)}
+.site-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.site-btn{border:1.5px solid var(--border-soft);border-radius:var(--r);padding:10px 6px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .16s;font-size:11px;color:var(--text2)}
+.site-btn.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:500}
+.site-btn:active{transform:scale(.93)}
+.site-btn svg{width:20px;height:20px;display:block;margin:0 auto 4px;opacity:.45;transition:opacity .16s}
+.site-btn.on svg{opacity:1}
+.slider-lrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.slider-lrow span{font-size:12px;color:var(--text2)}
+.sval{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;color:var(--sky-dark);background:var(--sky-light);padding:2px 9px;border-radius:7px}
+input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:99px;background:var(--sky-mid);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--sky-dark));box-shadow:0 2px 8px rgba(79,156,249,.45);cursor:pointer}
+.grade-bar{display:flex;gap:4px;margin:12px 0}
+.gseg{flex:1;height:10px;border-radius:99px;transition:all .3s}
+.gseg.g0{background:#BBF7D0}.gseg.g1{background:#FDE68A}
+.gseg.g2{background:#FCA5A5}.gseg.g3{background:#F87171}.gseg.g4{background:#DC2626}
+.gseg.dim{opacity:.2}.gseg.act{transform:scaleY(2.3)}
+.vip-res{border-radius:var(--r-xl);padding:18px;display:flex;align-items:center;gap:14px;animation:fu .4s ease}
+.vip-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0;box-shadow:0 5px 18px rgba(0,0,0,.14)}
+.vip-title{font-size:16px;font-weight:700;margin-bottom:3px}
+.vip-sub{font-size:12px;opacity:.72;line-height:1.5}
+.plan-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.plan-item:last-child{border-bottom:none}
+.plan-ic{width:28px;height:28px;border-radius:9px;background:var(--sky-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.plan-text{font-size:13px;color:var(--text);line-height:1.6;padding-top:4px}
+.info{border-radius:var(--r-sm);padding:9px 13px;font-size:13px;line-height:1.6;margin-bottom:7px;border-left:3px solid}
+.ib{background:var(--sky-light);color:#1E3A8A;border-color:var(--sky)}
+.ig{background:var(--green-light);color:var(--green-dark);border-color:var(--green)}
+.ia{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber)}
+.ir{background:var(--rose-light);color:var(--rose-dark);border-color:var(--rose)}
+.it{background:var(--teal-light);color:var(--teal-dark);border-color:var(--teal)}
+.btn{width:100%;padding:14px;border-radius:var(--r-lg);font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .16s;letter-spacing:-.01em}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-blue{background:linear-gradient(135deg,var(--sky),var(--sky-dark));color:#fff;box-shadow:0 6px 20px rgba(79,156,249,.4)}
+.btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;box-shadow:0 6px 20px rgba(20,184,166,.4)}
+.btn-outline{background:var(--surface);color:var(--sky-dark);border:1.5px solid var(--sky)}
+.btn-red{background:var(--rose-light);color:var(--rose-dark);border:1.5px solid var(--rose)}
+.flabel{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;display:block}
+.finput{width:100%;padding:10px 12px;border:1.5px solid var(--border-soft);border-radius:var(--r-sm);font-family:'Prompt',sans-serif;font-size:14px;color:var(--text);background:var(--surface);transition:border-color .15s;outline:none}
+.finput:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(79,156,249,.12)}
+select.finput{cursor:pointer}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;font-size:12px;font-weight:500}
+.tag-b{background:var(--sky-light);color:var(--sky-dark)}
+.tag-t{background:var(--teal-light);color:var(--teal-dark)}
+.hist-item{background:var(--surface);border-radius:var(--r-lg);padding:13px 14px;margin:8px 14px 0;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.hist-item:active{transform:scale(.98)}
+.hvip{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.hinfo h4{font-size:13px;font-weight:600;color:var(--text)}
+.hinfo p{font-size:11px;color:var(--text2);margin-top:2px}
+.htime{font-size:10px;color:var(--text3);margin-top:2px}
+.hact-btn{width:32px;height:32px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.hact-btn:active{transform:scale(.9)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end}
+.modal-bg.open{display:flex;animation:mbIn .25s ease}
+@keyframes mbIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:28px 28px 0 0;padding:20px 16px 32px;width:100%;max-height:90vh;overflow-y:auto;animation:mIn .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border-soft);border-radius:99px;margin:0 auto 18px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.qr-hero{margin:14px 14px 0;background:linear-gradient(135deg,#7C3AED,var(--sky-dark));border-radius:var(--r-xl);padding:20px;color:#fff;text-align:center}
+.qr-hero h2{font-size:20px;font-weight:700;margin-bottom:5px}
+.qr-hero p{font-size:12px;color:rgba(255,255,255,.72)}
+.qr-box{background:var(--surface);border-radius:var(--r-xl);padding:18px;margin:10px 14px 0;text-align:center;box-shadow:var(--shadow)}
+#qr-wrap canvas{border-radius:14px;box-shadow:0 4px 18px rgba(79,156,249,.18)}
+.qr-url{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);background:var(--bg);padding:8px 10px;border-radius:8px;word-break:break-all;text-align:left;margin:12px 0}
+.scale-item{background:var(--surface);border-radius:var(--r-lg);padding:13px 14px;margin:8px 14px 0;display:flex;gap:12px;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+.snum{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.scont h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.scont p{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px}
+.sact{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.code-box{background:#1E293B;border-radius:var(--r-lg);padding:14px;overflow-x:auto;margin-top:8px}
+.code-box pre{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#94A3B8;line-height:1.75;white-space:pre}
+.toast-w{position:fixed;bottom:calc(var(--nav-h)+12px);left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:center;width:calc(100% - 28px);max-width:380px;pointer-events:none}
+.toast{background:rgba(15,23,42,.93);backdrop-filter:blur(16px);color:#fff;padding:11px 15px;border-radius:14px;font-size:13px;display:flex;align-items:center;gap:8px;animation:tIn .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.toast svg{width:16px;height:16px;flex-shrink:0}
+@keyframes tIn{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sheet-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:500}
+.sheet-ok{background:var(--green-light);color:var(--green-dark)}
+.sheet-pend{background:var(--amber-light);color:var(--amber-dark)}
+.filter-row{padding:10px 14px 0;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fbtn{padding:7px 14px;font-size:12px;border-radius:99px;white-space:nowrap;border:1.5px solid var(--border-soft);background:var(--surface);color:var(--text2);font-family:'Prompt',sans-serif;cursor:pointer;font-weight:500;transition:all .15s}
+.fbtn.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-logo">
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <path d="M24 6C24 6 11 15 11 26C11 33.7 16.8 40 24 40C31.2 40 37 33.7 37 26C37 15 24 6 24 6Z" fill="white" opacity=".9"/>
+      <path d="M21 26h6M24 23v6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <h1>SMART-P</h1>
+  <p>Smart Phlebitis Assessment</p>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<div id="app">
+
+<!-- SCAN SCREEN -->
+<div class="screen active" id="sc-scan">
+<div style="padding-bottom:16px">
+  <div class="topbar">
+    <div class="topbar-left"><h2>สแกน IV Site — SMART-P</h2><p id="clk">—</p></div>
+    <div id="sheets-dot" class="sheet-badge sheet-pend">● ยังไม่เชื่อมต่อ</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="st-today">0</div><div class="stat-label">วันนี้</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-high" style="color:var(--rose)">0</div><div class="stat-label">VIP≥2</div></div>
+    <div class="stat-box"><div class="stat-num" id="st-total">0</div><div class="stat-label">ทั้งหมด</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      AI สแกนผิวหนัง (Claude Vision)
+    </div>
+    <div id="prev-wrap">
+      <img id="prev-img" alt="IV site">
+      <div class="scan-ov" id="scan-ov">
+        <div class="scan-beam"></div>
+        <div class="corner c-tl"></div><div class="corner c-tr"></div>
+        <div class="corner c-bl"></div><div class="corner c-br"></div>
+      </div>
+    </div>
+    <div class="upload-z" id="upz" onclick="document.getElementById('img-in').click()">
+      <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <h3>ถ่ายภาพหรืออัพโหลด</h3>
+      <p>แตะเพื่อเปิดกล้อง — AI วิเคราะห์ทันที</p>
+    </div>
+    <input type="file" id="img-in" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
+    <div class="ai-box" id="ai-box">
+      <div class="ai-chip"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Claude AI วิเคราะห์ผล</div>
+      <div class="ai-text" id="ai-txt"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ตำแหน่ง IV Site</div>
+    <div class="site-grid">
+      <div class="site-btn" onclick="pickSite(this,'หลังมือ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 11V6a2 2 0 00-4 0v0M14 10V4a2 2 0 00-4 0v2M10 10.5V6a2 2 0 00-4 0v8M18 11a2 2 0 012 2v2.5c0 2.21-1.79 4-4 4H10a5 5 0 01-5-5V9"/></svg>หลังมือ ซ้าย</div>
+      <div class="site-btn" onclick="pickSite(this,'หลังมือ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 11V6a2 2 0 00-4 0v0M14 10V4a2 2 0 00-4 0v2M10 10.5V6a2 2 0 00-4 0v8M18 11a2 2 0 012 2v2.5c0 2.21-1.79 4-4 4H10a5 5 0 01-5-5V9"/></svg>หลังมือ ขวา</div>
+      <div class="site-btn" onclick="pickSite(this,'ข้อมือ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>ข้อมือ ซ้าย</div>
+      <div class="site-btn" onclick="pickSite(this,'ข้อมือ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>ข้อมือ ขวา</div>
+      <div class="site-btn" onclick="pickSite(this,'แขน ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14s0-3 4-5l4-2 2 1v3l-3 2-1 5M8 7V4a2 2 0 014 0v8"/></svg>แขน ซ้าย</div>
+      <div class="site-btn" onclick="pickSite(this,'แขน ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14s0-3 4-5l4-2 2 1v3l-3 2-1 5M8 7V4a2 2 0 014 0v8"/></svg>แขน ขวา</div>
+      <div class="site-btn" onclick="pickSite(this,'แขนพับ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18s-5-5-1-9l6-6M15 3l2 2-6 6-2-2z"/></svg>แขนพับ ซ้าย</div>
+      <div class="site-btn" onclick="pickSite(this,'แขนพับ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18s-5-5-1-9l6-6M15 3l2 2-6 6-2-2z"/></svg>แขนพับ ขวา</div>
+      <div class="site-btn" onclick="pickSite(this,'Central line')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Central line</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>อาการ</div>
+    <div class="sym-grid">
+      <div class="sym-item" id="sym-pain" onclick="toggleSym('pain',this)"><div class="sym-dot"></div>เจ็บปวด</div>
+      <div class="sym-item" id="sym-red" onclick="toggleSym('red',this)"><div class="sym-dot"></div>ผิวแดง</div>
+      <div class="sym-item" id="sym-swell" onclick="toggleSym('swell',this)"><div class="sym-dot"></div>บวม</div>
+      <div class="sym-item" id="sym-warm" onclick="toggleSym('warm',this)"><div class="sym-dot"></div>ร้อน</div>
+      <div class="sym-item" id="sym-streak" onclick="toggleSym('streak',this)"><div class="sym-dot"></div>รอยแดงเส้น</div>
+      <div class="sym-item" id="sym-cord" onclick="toggleSym('cord',this)"><div class="sym-dot"></div>คลำก้อน</div>
+      <div class="sym-item" id="sym-pus" onclick="toggleSym('pus',this)"><div class="sym-dot"></div>มีหนอง</div>
+      <div class="sym-item" id="sym-fever" onclick="toggleSym('fever',this)"><div class="sym-dot"></div>ไข้</div>
+    </div>
+    <div style="margin-top:13px">
+      <div class="slider-lrow"><span>ระยะเวลา IV</span><span class="sval" id="iv-v">24 ชม.</span></div>
+      <input type="range" min="0" max="120" value="24" id="iv-sl" oninput="document.getElementById('iv-v').textContent=this.value+' ชม.'">
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>ข้อมูลผู้ป่วย</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label class="flabel">HN</label><input class="finput" id="pt-hn" placeholder="HN001234"></div>
+      <div><label class="flabel">ชื่อ-สกุล</label><input class="finput" id="pt-name" placeholder="ชื่อผู้ป่วย"></div>
+      <div><label class="flabel">Ward</label><input class="finput" id="pt-ward" placeholder="Med3, ICU"></div>
+      <div><label class="flabel">พยาบาล</label><input class="finput" id="nurse-name" placeholder="ชื่อพยาบาล"></div>
+    </div>
+    <div style="margin-top:8px"><label class="flabel">สารน้ำ / ยา</label><input class="finput" id="pt-drug" placeholder="0.9%NSS, Vancomycin 1g..."></div>
+    <div style="margin-top:8px"><label class="flabel">หมายเหตุ</label><input class="finput" id="pt-note" placeholder="ข้อมูลเพิ่มเติม"></div>
+  </div>
+  <div style="margin:12px 14px 0">
+    <button class="btn btn-blue" id="abtn" onclick="analyze()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      วิเคราะห์ + วางแผนพยาบาล
+    </button>
+  </div>
+  <div id="res-sec" style="display:none">
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ผล VIP Score</div>
+      <div class="grade-bar">
+        <div class="gseg g0 dim" id="gs0"></div><div class="gseg g1 dim" id="gs1"></div>
+        <div class="gseg g2 dim" id="gs2"></div><div class="gseg g3 dim" id="gs3"></div>
+        <div class="gseg g4 dim" id="gs4"></div>
+      </div>
+      <div class="vip-res" id="vip-r"><div class="vip-circle" id="vip-c"></div><div><div class="vip-title" id="vip-t"></div><div class="vip-sub" id="vip-s"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>แผนการพยาบาล</div>
+      <div id="plan-list"></div>
+    </div>
+    <div class="card"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>คำแนะนำ</div><div id="rec-box"></div></div>
+    <div style="margin:10px 14px 0"><button class="btn btn-teal" id="save-btn" onclick="saveRecord()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg><span id="save-txt">บันทึก Google Sheets</span></button></div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div class="screen" id="sc-history">
+<div style="padding-bottom:16px">
+  <div class="topbar">
+    <div class="topbar-left"><h2>ประวัติการประเมิน</h2><p id="hist-count">0 รายการ</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn" onclick="syncFromSheets()" title="ดึงจาก Sheets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      </button>
+      <button class="icon-btn" onclick="exportCSV()" title="Export CSV">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <button class="fbtn on" id="f-all" onclick="filterHist('all')">ทั้งหมด</button>
+    <button class="fbtn" id="f-today" onclick="filterHist('today')">วันนี้</button>
+    <button class="fbtn" id="f-high" onclick="filterHist('high')" style="color:var(--rose-dark);border-color:var(--rose)">VIP≥2</button>
+    <button class="fbtn" id="f-ok" onclick="filterHist('ok')" style="color:var(--green-dark);border-color:var(--green)">ปกติ 0-1</button>
+  </div>
+  <div id="hist-list" style="margin-top:4px">
+    <div style="text-align:center;padding:50px 16px;color:var(--text3)">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 10px;display:block;opacity:.35"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <p style="font-size:13px">ยังไม่มีประวัติ</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCALE SCREEN -->
+<div class="screen" id="sc-scale">
+<div style="padding-bottom:16px">
+  <div class="topbar"><div class="topbar-left"><h2>VIP Scale</h2><p>Jackson, 1998</p></div></div>
+  <div style="padding:10px 14px 0"><div class="info it" style="margin-bottom:0">ประเมิน IV site ทุก 8–12 ชม. หรือทุกครั้งที่ให้ยา</div></div>
+  <div class="scale-item"><div class="snum" style="background:#D1FAE5;color:#065F46">0</div><div class="scont"><h4>ปกติ</h4><p>IV site ปกติ ไม่มีอาการ</p><span class="sact" style="background:#D1FAE5;color:#065F46">ดูแลต่อเนื่อง</span></div></div>
+  <div class="scale-item"><div class="snum" style="background:#FEF3C7;color:#92400E">1</div><div class="scont"><h4>Possible Phlebitis</h4><p>เริ่มเจ็บหรือผิวแดงเล็กน้อย</p><span class="sact" style="background:#FEF3C7;color:#92400E">ติดตามอาการ</span></div></div>
+  <div class="scale-item"><div class="snum" style="background:#FEE2E2;color:#991B1B">2</div><div class="scont"><h4>Early Phlebitis</h4><p>เจ็บ + แดง หรือบวม (2 ใน 3)</p><span class="sact" style="background:#FCA5A5;color:#7F1D1D">เปลี่ยนตำแหน่ง IV ทันที</span></div></div>
+  <div class="scale-item"><div class="snum" style="background:#FEE2E2;color:#7F1D1D">3</div><div class="scont"><h4>Medium Phlebitis</h4><p>เจ็บ + แดง + บวม + รอยเส้น + ก้อน</p><span class="sact" style="background:#F87171;color:#fff">เปลี่ยน + รายงานแพทย์</span></div></div>
+  <div class="scale-item"><div class="snum" style="background:#DC2626;color:#fff">4</div><div class="scont"><h4>Advanced / Thrombophlebitis</h4><p>ทุกอาการ + หนอง ± ไข้</p><span class="sact" style="background:#DC2626;color:#fff">ด่วน! ประเมิน Sepsis</span></div></div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>ความถี่ประเมิน</div>
+    <div class="info ig">ผู้ใหญ่ทั่วไป — ทุก 8–12 ชั่วโมง</div>
+    <div class="info ib">ยา Vesicant — ทุก 1–2 ชั่วโมง</div>
+    <div class="info ia">เด็ก / ผู้สูงอายุ — ทุก 1–4 ชั่วโมง</div>
+    <div class="info ir" style="margin-bottom:0">VIP ≥ 2 — ทุก 1 ชม. + รายงานแพทย์ทันที</div>
+  </div>
+  <div style="height:16px"></div>
+</div>
+</div>
+
+<!-- QR SCREEN -->
+<div class="screen" id="sc-qr">
+<div style="padding-bottom:16px">
+  <div class="topbar"><div class="topbar-left"><h2>แชร์ & ตั้งค่า</h2><p>QR Code + Google Sheets</p></div></div>
+  <div class="qr-hero"><h2>📲 แชร์ให้ทีมพยาบาล</h2><p>สแกน QR Code เพื่อเปิด App บนมือถือทุกเครื่อง</p></div>
+  <div class="qr-box">
+    <div id="qr-wrap" style="display:flex;justify-content:center;padding:10px 0 14px"></div>
+    <div class="qr-url" id="qr-url-txt">—</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-blue" onclick="copyUrl()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก URL</button>
+      <button class="btn btn-outline" onclick="saveQR()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>บันทึก QR รูปภาพ</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Google Sheets</div>
+    <div class="info ib" style="margin-bottom:10px;font-size:12px"><strong>Sheet ID:</strong> 1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA<br>วาง Apps Script ด้านล่าง → Deploy → Web App URL มาใส่ด้านล่าง</div>
+    <label class="flabel">Apps Script Web App URL</label>
+    <input class="finput" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;margin-bottom:10px">
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-teal" onclick="saveGsUrl()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>บันทึก</button>
+      <button class="btn btn-outline" onclick="testConn()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>ทดสอบ</button>
+    </div>
+    <div id="gs-status" style="margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Google Apps Script — วางใน Sheet นี้</div>
+    <div class="info ia" style="font-size:12px;margin-bottom:8px">Extensions → Apps Script → วางโค้ด → Deploy → Web App (Anyone can access)</div>
+    <div class="code-box"><pre id="gas-code">function doPost(e) {
+  try {
+    var d = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.openById(
+      '1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA');
+    var sh = ss.getSheetByName('Phlebitis');
+    if (!sh) {
+      sh = ss.insertSheet('Phlebitis');
+      var hdr = ['ID','Timestamp','HN','ชื่อ-สกุล',
+        'Ward','Bed','ตำแหน่ง IV','VIP Score',
+        'Grade','อาการ','ระยะเวลา(ชม.)','สารน้ำ/ยา',
+        'พยาบาล','หมายเหตุ','AI วิเคราะห์'];
+      sh.appendRow(hdr);
+      sh.getRange(1,1,1,hdr.length)
+        .setFontWeight('bold')
+        .setBackground('#2563EB')
+        .setFontColor('#fff');
+      sh.setFrozenRows(1);
+    }
+    if (d._action === 'update' && d._rowIndex) {
+      var row = parseInt(d._rowIndex) + 1;
+      sh.getRange(row,2,1,14).setValues([[
+        d.ts,d.hn,d.name,d.ward,d.bed,
+        d.site,d.vip,d.grade,d.syms,
+        d.hours,d.drugs,d.nurse,
+        d.notes,d.aiText||'']]);
+      return ContentService.createTextOutput(
+        JSON.stringify({ok:true,action:'updated'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    if (d._action === 'delete' && d._rowIndex) {
+      sh.deleteRow(parseInt(d._rowIndex)+1);
+      return ContentService.createTextOutput(
+        JSON.stringify({ok:true,action:'deleted'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var newId = 'PH'+new Date().getTime();
+    sh.appendRow([newId,d.ts,d.hn,d.name,
+      d.ward,d.bed,d.site,d.vip,d.grade,
+      d.syms,d.hours,d.drugs,d.nurse,
+      d.notes,d.aiText||'']);
+    return ContentService.createTextOutput(
+      JSON.stringify({ok:true,id:newId,
+        row:sh.getLastRow()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.openById(
+      '1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA');
+    var sh = ss.getSheetByName('Phlebitis');
+    if (!sh) return ContentService.createTextOutput(
+      JSON.stringify({ok:true,rows:[]}))
+      .setMimeType(ContentService.MimeType.JSON);
+    var vals = sh.getDataRange().getValues();
+    return ContentService.createTextOutput(
+      JSON.stringify({ok:true,rows:vals}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ok:false,error:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre></div>
+    <button class="btn btn-outline" onclick="copyCode()" style="margin-top:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก Script</button>
+  </div>
+  <div style="height:16px"></div>
+</div>
+</div>
+
+</div><!-- /app -->
+
+<nav class="bnav">
+  <button class="ntab active" onclick="goTo('scan')" id="nav-scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg><span>สแกน</span></button>
+  <button class="ntab" onclick="goTo('history')" id="nav-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>ประวัติ</span></button>
+  <button class="ntab" onclick="goTo('scale')" id="nav-scale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>VIP Scale</span></button>
+  <button class="ntab" onclick="goTo('qr')" id="nav-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h3M18 18v3M14 18h2v3"/></svg><span>แชร์</span></button>
+</nav>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไขข้อมูล</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label class="flabel">HN</label><input class="finput" id="e-hn"></div>
+      <div><label class="flabel">ชื่อ-สกุล</label><input class="finput" id="e-name"></div>
+      <div><label class="flabel">Ward</label><input class="finput" id="e-ward"></div>
+      <div><label class="flabel">Bed</label><input class="finput" id="e-bed"></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="flabel">ตำแหน่ง IV Site</label><input class="finput" id="e-site"></div>
+    <div style="margin-bottom:8px"><label class="flabel">VIP Score (0-4)</label>
+      <select class="finput" id="e-vip"><option value="0">0 — ปกติ</option><option value="1">1 — Possible</option><option value="2">2 — Early</option><option value="3">3 — Medium</option><option value="4">4 — Advanced</option></select>
+    </div>
+    <div style="margin-bottom:8px"><label class="flabel">อาการ</label><input class="finput" id="e-syms"></div>
+    <div style="margin-bottom:8px"><label class="flabel">สารน้ำ / ยา</label><input class="finput" id="e-drugs"></div>
+    <div style="margin-bottom:8px"><label class="flabel">พยาบาล</label><input class="finput" id="e-nurse"></div>
+    <div style="margin-bottom:14px"><label class="flabel">หมายเหตุ</label><input class="finput" id="e-notes"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-teal" onclick="confirmEdit()" style="flex:2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>บันทึกการแก้ไข</button>
+      <button class="btn btn-red" onclick="confirmDelete()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>ลบ</button>
+      <button class="btn btn-outline" onclick="closeModal()" style="flex:1;font-size:13px">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-w" id="tw"></div>
+
+<script>
+var SHEET_ID='1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA';
+var S={site:'',grade:-1,imgB64:'',syms:{},history:JSON.parse(localStorage.getItem('ph_v3')||'[]'),gsUrl:localStorage.getItem('ph_gs3')||'',editIdx:-1,aiText:''};
+var GRADES=[
+  {label:'Grade 0 — ปกติ',desc:'IV site ปกติ ไม่พบสัญญาณ Phlebitis',bg:'#ECFDF5',tc:'#065F46',cc:'#10B981'},
+  {label:'Grade 1 — Possible Phlebitis',desc:'เริ่มมีสัญญาณ ติดตามอาการ',bg:'#FFFBEB',tc:'#92400E',cc:'#F59E0B'},
+  {label:'Grade 2 — Early Phlebitis',desc:'อักเสบระยะต้น เปลี่ยนตำแหน่ง IV',bg:'#FFF7ED',tc:'#C2410C',cc:'#F97316'},
+  {label:'Grade 3 — Medium Phlebitis',desc:'อักเสบปานกลาง รายงานแพทย์ทันที',bg:'#FFF1F2',tc:'#9F1239',cc:'#F43F5E'},
+  {label:'Grade 4 — Advanced/Thrombophlebitis',desc:'รุนแรง ด่วนมาก ประเมิน Sepsis',bg:'#FEF2F2',tc:'#7F1D1D',cc:'#DC2626'}
+];
+var GBG=['#D1FAE5','#FEF3C7','#FED7AA','#FECDD3','#FECACA'];
+var GTC=['#065F46','#92400E','#C2410C','#9F1239','#7F1D1D'];
+var histFilter='all';
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    updateStats();updateClock();setInterval(updateClock,1000);
+    initQR();
+    document.getElementById('gs-url').value=S.gsUrl;
+    updateSheetsBadge();
+  },2100);
+});
+function updateClock(){document.getElementById('clk').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sc-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id==='history')renderHistory();
+}
+function onImg(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=async e=>{
+    S.imgB64=e.target.result.split(',')[1];
+    var img=document.getElementById('prev-img');
+    img.src=e.target.result;img.style.display='block';
+    document.getElementById('upz').style.display='none';
+    document.getElementById('scan-ov').classList.add('on');
+    toast('AI กำลังวิเคราะห์ภาพ...','blue');
+    await aiScan(S.imgB64);
+    document.getElementById('scan-ov').classList.remove('on');
+  };
+  r.readAsDataURL(f);
+}
+async function aiScan(b64){
+  S.aiText='';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+          {type:'text',text:'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้อย่างรวดเร็ว ตอบภาษาไทย 3-4 ประโยค:\n1. สัญญาณที่เห็น (สี ความแดง บวม รอยผิดปกติ)\n2. ระดับ VIP Score ที่ประเมินได้ (0-4)\n3. คำแนะนำเร่งด่วน'}
+        ]}]})
+    });
+    var data=await res.json();
+    var txt=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+    if(txt){
+      S.aiText=txt;
+      document.getElementById('ai-txt').textContent=txt;
+      document.getElementById('ai-box').classList.add('show');
+      autoFill(txt);
+      toast('AI วิเคราะห์เสร็จแล้ว ✓','green');
+    }
+  }catch(e){toast('เชื่อมต่อ AI ไม่ได้ กรอกอาการเองได้เลย','amber');}
+}
+function autoFill(txt){
+  var t=txt.toLowerCase();
+  var map={pain:['เจ็บ','ปวด'],red:['แดง'],swell:['บวม'],warm:['ร้อน'],streak:['เส้น','streak'],cord:['ก้อน','cord'],pus:['หนอง'],fever:['ไข้']};
+  Object.entries(map).forEach(([k,kws])=>{
+    if(kws.some(w=>t.includes(w))){
+      S.syms[k]=true;
+      var el=document.getElementById('sym-'+k);
+      if(el){el.classList.add('on');el.querySelector('.sym-dot').style.background='var(--sky)';}
+    }
+  });
+}
+function toggleSym(key,el){
+  el.classList.toggle('on');
+  el.querySelector('.sym-dot').style.background=el.classList.contains('on')?'var(--sky)':'var(--border-soft)';
+  S.syms[key]=el.classList.contains('on');
+  if(navigator.vibrate)navigator.vibrate(10);
+}
+function pickSite(el,name){
+  document.querySelectorAll('.site-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');S.site=name;
+  if(navigator.vibrate)navigator.vibrate(12);
+}
+function calcGrade(){
+  var s=S.syms,hrs=parseInt(document.getElementById('iv-sl').value),g=0;
+  if(s.pain)g++;
+  if(s.red||s.swell||s.warm)g++;
+  if(s.streak)g++;
+  if(s.cord)g++;
+  if(s.pus||s.fever)g++;
+  if(g>4)g=4;
+  if(hrs>96&&g<1)g=1;
+  return g;
+}
+function analyze(){
+  var g=calcGrade();S.grade=g;
+  var gd=GRADES[g];
+  for(var i=0;i<=4;i++){var seg=document.getElementById('gs'+i);seg.classList.toggle('dim',i>g);seg.classList.toggle('act',i===g);}
+  var vr=document.getElementById('vip-r');vr.style.background=gd.bg;
+  var vc=document.getElementById('vip-c');vc.textContent=g;vc.style.background=gd.cc;vc.style.color='#fff';
+  document.getElementById('vip-t').textContent=gd.label;document.getElementById('vip-t').style.color=gd.tc;
+  document.getElementById('vip-s').textContent=gd.desc;document.getElementById('vip-s').style.color=gd.tc;
+  document.getElementById('plan-list').innerHTML=getNursing(g).map(p=>'<div class="plan-item"><div class="plan-ic">'+p.ic+'</div><div class="plan-text">'+p.tx+'</div></div>').join('');
+  document.getElementById('rec-box').innerHTML=getRec(g,parseInt(document.getElementById('iv-sl').value));
+  document.getElementById('res-sec').style.display='block';
+  setTimeout(()=>document.getElementById('res-sec').scrollIntoView({behavior:'smooth',block:'start'}),80);
+  if(navigator.vibrate)navigator.vibrate([25,15,25]);
+}
+function getNursing(g){
+  var all={
+    0:[{ic:'✓',tx:'IV site ปกติ ดูแลต่อเนื่อง ไม่จำเป็นต้องเปลี่ยน'},{ic:'🕐',tx:'ประเมิน VIP ทุก 8–12 ชม. บันทึกเวชระเบียน'},{ic:'🩹',tx:'รักษา dressing ให้สะอาดแห้ง'}],
+    1:[{ic:'👀',tx:'ติดตามอาการทุก 4 ชม.'},{ic:'💧',tx:'พิจารณาลดอัตราสารน้ำ'},{ic:'🔄',tx:'เตรียมเปลี่ยนตำแหน่งหากแย่ลง'},{ic:'📋',tx:'บันทึกรายงานตามระบบ'}],
+    2:[{ic:'❌',tx:'ถอด IV catheter ทันที เปลี่ยนตำแหน่งใหม่'},{ic:'🧊',tx:'Cold compress 15–20 นาที ทุก 2–4 ชม.'},{ic:'☀️',tx:'Warm compress หลัง 24–48 ชม.'},{ic:'⬆️',tx:'ยกแขนสูงกว่าหัวใจ'},{ic:'💊',tx:'พิจารณา Topical NSAID gel'},{ic:'📏',tx:'วัดรอยแดง ถ่ายภาพทุกเวร'}],
+    3:[{ic:'🚨',tx:'ถอด IV ทันที รายงานแพทย์โดยด่วน'},{ic:'📏',tx:'วัดบันทึกรอยแดง/รอยเส้นทุกเวร'},{ic:'📸',tx:'ถ่ายภาพบันทึกเวชระเบียน'},{ic:'🧊',tx:'Cold/Warm compress + Elevation'},{ic:'💉',tx:'พิจารณา Anticoagulant therapy'},{ic:'🔬',tx:'Systemic antibiotics หากติดเชื้อ'}],
+    4:[{ic:'🆘',tx:'รายงานแพทย์ด่วนที่สุด ถอด IV ทันที'},{ic:'💓',tx:'ประเมิน Sepsis: Vital signs ทุก 15–30 นาที'},{ic:'🧪',tx:'เก็บ CBC, Blood culture ×2, CRP, PCT'},{ic:'💊',tx:'Broad-spectrum antibiotics + Anticoagulant'},{ic:'🩹',tx:'ทำแผล Sterile dressing'},{ic:'📝',tx:'บันทึก Incident report ตามระบบ'}]
+  };
+  return all[g]||all[0];
+}
+function getRec(g,h){
+  var html='';
+  if(h>72)html+='<div class="info ia">⏰ สาย IV คาไว้ '+h+' ชม. ควรพิจารณาเปลี่ยน (72–96 ชม.)</div>';
+  if(g===0)html+='<div class="info ig">IV site ดี ดูแลต่อเนื่อง ประเมินตามกำหนด</div>';
+  if(g>=2)html+='<div class="info ib">📍 บันทึกตำแหน่งที่เกิด Phlebitis เพื่อหลีกเลี่ยงครั้งต่อไป</div>';
+  if(g>=3)html+='<div class="info ir">พิจารณา PICC line หรือ Central line หากต้องให้ยาต่อเนื่อง</div>';
+  if(g===4)html+='<div class="info ir">ประเมิน Sepsis criteria (SIRS/qSOFA) ทันที</div>';
+  return html||'<div class="info ib">ดูแล dressing ให้สะอาดแห้ง รักษาความสะอาด IV site</div>';
+}
+async function saveRecord(){
+  if(S.grade<0){toast('วิเคราะห์ VIP score ก่อนบันทึก','amber');return;}
+  var btn=document.getElementById('save-btn'),txt=document.getElementById('save-txt');
+  btn.disabled=true;txt.innerHTML='<span class="spinner"></span> กำลังบันทึก...';
+  var symArr=Object.entries(S.syms).filter(([,v])=>v).map(([k])=>({pain:'ปวด',red:'แดง',swell:'บวม',warm:'ร้อน',streak:'รอยเส้น',cord:'ก้อน',pus:'หนอง',fever:'ไข้'}[k]||k));
+  var now=new Date();
+  var payload={ts:now.toLocaleString('th-TH'),hn:document.getElementById('pt-hn').value||'-',name:document.getElementById('pt-name').value||'-',ward:document.getElementById('pt-ward').value||'-',bed:'',site:S.site||'ไม่ระบุ',vip:S.grade,grade:GRADES[S.grade].label,syms:symArr.join(', ')||'ไม่มี',hours:document.getElementById('iv-sl').value,drugs:document.getElementById('pt-drug').value||'-',nurse:document.getElementById('nurse-name').value||'-',notes:document.getElementById('pt-note').value||'',aiText:S.aiText};
+  var rec=Object.assign({},payload,{_id:'local_'+now.getTime(),_ts:now.getTime(),_rowIndex:null,_synced:false});
+  S.history.unshift(rec);
+  if(S.history.length>500)S.history.pop();
+  localStorage.setItem('ph_v3',JSON.stringify(S.history));
+  updateStats();
+  if(S.gsUrl){
+    try{
+      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      S.history[0]._synced=true;
+      localStorage.setItem('ph_v3',JSON.stringify(S.history));
+      toast('บันทึก Google Sheets + Local ✓','green');
+    }catch(e){toast('บันทึก Local แล้ว (Sheets error)','amber');}
+  }else{toast('บันทึก Local ✓ (ตั้งค่า Sheets ในเมนูแชร์)','green');}
+  if(navigator.vibrate)navigator.vibrate([25,20,80]);
+  btn.disabled=false;
+  txt.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> บันทึก Google Sheets';
+}
+function updateStats(){
+  var today=new Date().toLocaleDateString('th-TH');
+  var tRecs=S.history.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
+  document.getElementById('st-today').textContent=tRecs.length;
+  document.getElementById('st-high').textContent=tRecs.filter(r=>parseInt(r.vip)>=2).length;
+  document.getElementById('st-total').textContent=S.history.length;
+  document.getElementById('hist-count').textContent=S.history.length+' รายการ';
+}
+function filterHist(f){
+  histFilter=f;
+  ['all','today','high','ok'].forEach(x=>{var b=document.getElementById('f-'+x);if(b)b.classList.toggle('on',x===f);});
+  renderHistory();
+}
+function renderHistory(){
+  var el=document.getElementById('hist-list');
+  var list=S.history;
+  var today=new Date().toLocaleDateString('th-TH');
+  if(histFilter==='high')list=list.filter(r=>parseInt(r.vip)>=2);
+  else if(histFilter==='ok')list=list.filter(r=>parseInt(r.vip)<2);
+  else if(histFilter==='today')list=list.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
+  document.getElementById('hist-count').textContent=list.length+' รายการ';
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px 16px;color:var(--text3)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 10px;display:block;opacity:.35"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p style="font-size:13px">ไม่พบข้อมูล</p></div>';return;}
+  el.innerHTML=list.slice(0,80).map(r=>{
+    var g=parseInt(r.vip)||0,ri=S.history.indexOf(r);
+    return '<div class="hist-item" onclick="openEdit('+ri+')">'
+      +'<div class="hvip" style="background:'+GBG[g]+';color:'+GTC[g]+'">'+g+'</div>'
+      +'<div class="hinfo" style="flex:1;min-width:0"><h4>'+escH(r.name||'-')+' <span style="font-weight:400;color:var(--text3);font-size:11px">'+escH(r.hn||'')+'</span></h4>'
+      +'<p>'+escH(r.ward||'-')+' · '+escH(r.site||'-')+'</p>'
+      +'<div class="htime">'+escH(r.ts||'')+(r._synced?' · <span style="color:var(--green-dark)">✓ Sheets</span>':' · <span style="color:var(--amber-dark)">⏳ Local</span>')+'</div></div>'
+      +'<button class="hact-btn" style="background:var(--sky-light);color:var(--sky-dark)" onclick="event.stopPropagation();openEdit('+ri+')">'
+      +'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      +'</div>';
+  }).join('');
+}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function openEdit(idx){
+  S.editIdx=idx;var r=S.history[idx];
+  document.getElementById('e-hn').value=r.hn||'';
+  document.getElementById('e-name').value=r.name||'';
+  document.getElementById('e-ward').value=r.ward||'';
+  document.getElementById('e-bed').value=r.bed||'';
+  document.getElementById('e-site').value=r.site||'';
+  document.getElementById('e-vip').value=r.vip||'0';
+  document.getElementById('e-syms').value=r.syms||'';
+  document.getElementById('e-drugs').value=r.drugs||'';
+  document.getElementById('e-nurse').value=r.nurse||'';
+  document.getElementById('e-notes').value=r.notes||'';
+  document.getElementById('edit-modal').classList.add('open');
+  if(navigator.vibrate)navigator.vibrate(15);
+}
+function closeModal(){document.getElementById('edit-modal').classList.remove('open');S.editIdx=-1;}
+async function confirmEdit(){
+  if(S.editIdx<0)return;
+  var r=S.history[S.editIdx];
+  r.hn=document.getElementById('e-hn').value;
+  r.name=document.getElementById('e-name').value;
+  r.ward=document.getElementById('e-ward').value;
+  r.bed=document.getElementById('e-bed').value;
+  r.site=document.getElementById('e-site').value;
+  r.vip=parseInt(document.getElementById('e-vip').value);
+  r.grade=GRADES[r.vip]?.label||'';
+  r.syms=document.getElementById('e-syms').value;
+  r.drugs=document.getElementById('e-drugs').value;
+  r.nurse=document.getElementById('e-nurse').value;
+  r.notes=document.getElementById('e-notes').value;
+  r._edited=true;r._synced=false;
+  localStorage.setItem('ph_v3',JSON.stringify(S.history));
+  closeModal();updateStats();renderHistory();
+  if(S.gsUrl&&r._rowIndex){
+    try{
+      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},r,{_action:'update'}))});
+      r._synced=true;localStorage.setItem('ph_v3',JSON.stringify(S.history));
+      toast('แก้ไขและบันทึก Sheets แล้ว ✓','green');
+    }catch(e){toast('แก้ไข Local แล้ว (Sheets error)','amber');}
+  }else{toast('แก้ไขเรียบร้อย ✓','green');}
+  renderHistory();
+}
+async function confirmDelete(){
+  if(S.editIdx<0)return;
+  var r=S.history[S.editIdx];
+  if(!confirm('ลบรายการนี้?\n'+r.name+' ('+r.hn+')\nVIP: '+r.vip+'\n\nไม่สามารถกู้คืนได้'))return;
+  var ri=S.editIdx;
+  S.history.splice(ri,1);
+  localStorage.setItem('ph_v3',JSON.stringify(S.history));
+  closeModal();updateStats();renderHistory();
+  if(S.gsUrl&&r._rowIndex){
+    try{await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({_action:'delete',_rowIndex:r._rowIndex})});toast('ลบออกจาก Sheets แล้ว','green');}
+    catch(e){toast('ลบ Local แล้ว (Sheets error)','amber');}
+  }else{toast('ลบเรียบร้อย','green');}
+}
+async function syncFromSheets(){
+  if(!S.gsUrl){toast('ตั้งค่า Google Sheets URL ก่อน','amber');return;}
+  toast('กำลังดึงข้อมูลจาก Sheets...','blue');
+  try{
+    var res=await fetch(S.gsUrl+'?t='+Date.now());
+    var data=await res.json();
+    if(data.ok&&data.rows&&data.rows.length>1){
+      var rows=data.rows.slice(1);
+      var imported=rows.map((r,i)=>({_id:r[0]||'sh_'+i,_ts:new Date(r[1]).getTime()||Date.now(),_rowIndex:i+1,_synced:true,ts:r[1]||'',hn:r[2]||'',name:r[3]||'',ward:r[4]||'',bed:r[5]||'',site:r[6]||'',vip:parseInt(r[7])||0,grade:r[8]||'',syms:r[9]||'',hours:r[10]||'',drugs:r[11]||'',nurse:r[12]||'',notes:r[13]||'',aiText:r[14]||''}));
+      imported.forEach(ir=>{var loc=S.history.findIndex(r=>r._id===ir._id);if(loc>=0)S.history[loc]=ir;else S.history.push(ir);});
+      S.history.sort((a,b)=>b._ts-a._ts);
+      localStorage.setItem('ph_v3',JSON.stringify(S.history));
+      updateStats();renderHistory();
+      toast('ดึงข้อมูล '+imported.length+' รายการจาก Sheets ✓','green');
+    }else{toast('ไม่พบข้อมูลใน Sheets','amber');}
+  }catch(e){toast('ดึงข้อมูลไม่ได้ ตรวจสอบ URL','amber');}
+}
+function exportCSV(){
+  if(!S.history.length){toast('ไม่มีข้อมูล','amber');return;}
+  var h=['Timestamp','HN','ชื่อ','Ward','Site','VIP','Grade','อาการ','ชม.','ยา','พยาบาล','หมายเหตุ'];
+  var rows=S.history.map(r=>[r.ts,r.hn,r.name,r.ward,r.site,r.vip,r.grade,r.syms,r.hours,r.drugs,r.nurse,r.notes].map(v=>'"'+(v||'')+'"').join(','));
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+h.join(',')+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'}));
+  a.download='phlebitis_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.csv';
+  a.click();toast('Export CSV สำเร็จ ✓','green');
+}
+function saveGsUrl(){S.gsUrl=document.getElementById('gs-url').value.trim();localStorage.setItem('ph_gs3',S.gsUrl);updateSheetsBadge();toast('บันทึก URL แล้ว ✓','green');}
+async function testConn(){
+  var url=document.getElementById('gs-url').value.trim();
+  if(!url){toast('กรอก URL ก่อน','amber');return;}
+  toast('กำลังทดสอบ...','blue');
+  try{var res=await fetch(url+'?t='+Date.now());var data=await res.json();
+    document.getElementById('gs-status').innerHTML='<div class="info ig" style="margin-bottom:0">✓ เชื่อมต่อสำเร็จ '+(data.rows?'('+data.rows.length+' rows)':'')+'</div>';
+    toast('เชื่อมต่อสำเร็จ ✓','green');
+  }catch(e){
+    document.getElementById('gs-status').innerHTML='<div class="info ir" style="margin-bottom:0">เชื่อมต่อไม่ได้ — ตรวจสอบ URL และ Deploy settings</div>';
+    toast('เชื่อมต่อไม่สำเร็จ','amber');
+  }
+}
+function updateSheetsBadge(){var b=document.getElementById('sheets-dot');if(S.gsUrl){b.className='sheet-badge sheet-ok';b.textContent='● Sheets เชื่อมต่อแล้ว';}else{b.className='sheet-badge sheet-pend';b.textContent='● ยังไม่เชื่อมต่อ';}}
+function initQR(){
+  var url=window.location.href;
+  document.getElementById('qr-url-txt').textContent=url;
+  var wrap=document.getElementById('qr-wrap');wrap.innerHTML='';
+  try{new QRCode(wrap,{text:url,width:210,height:210,colorDark:'#1E293B',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.H});}
+  catch(e){wrap.innerHTML='<p style="color:var(--text3);font-size:12px;padding:20px">คัดลอก URL ด้านล่าง</p>';}
+}
+function copyUrl(){navigator.clipboard.writeText(window.location.href).then(()=>toast('คัดลอก URL แล้ว ✓','green')).catch(()=>toast('กรุณาคัดลอก URL เอง','amber'));}
+function saveQR(){var c=document.querySelector('#qr-wrap canvas');if(!c){toast('ไม่พบ QR Code','amber');return;}var a=document.createElement('a');a.download='phlebitis-ai-qr.png';a.href=c.toDataURL('image/png');a.click();toast('บันทึก QR Code แล้ว ✓','green');}
+function copyCode(){navigator.clipboard.writeText(document.getElementById('gas-code').textContent).then(()=>toast('คัดลอก Script แล้ว ✓','green')).catch(()=>toast('เลือกข้อความและคัดลอกเอง','amber'));}
+function toast(msg,type){
+  var tw=document.getElementById('tw'),el=document.createElement('div');el.className='toast';
+  var c={green:'#10B981',blue:'#4F9CF9',amber:'#F59E0B',red:'#F43F5E'};
+  var ico={green:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>',blue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',amber:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>',red:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'};
+  el.innerHTML='<span style="color:'+(c[type]||c.blue)+';flex-shrink:0">'+(ico[type]||ico.blue)+'</span>'+msg;
+  tw.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(6px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300);},3200);
+}
+document.getElementById('edit-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+</script>
+</body>
+</html>
