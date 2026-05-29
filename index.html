@@ -5,802 +5,1122 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SMART-P">
-<meta name="theme-color" content="#4F9CF9">
-<title>SMART-P — Smart Phlebitis Assessment</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<meta name="theme-color" content="#1D4ED8">
+<title>SMART-P — Smart IV Complication Assessment</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --sky:#4F9CF9;--sky-dark:#2563EB;--sky-light:#EFF6FF;--sky-mid:#BFDBFE;
-  --teal:#14B8A6;--teal-light:#CCFBF1;--teal-dark:#0F766E;
-  --rose:#FB7185;--rose-light:#FFF1F2;--rose-dark:#BE123C;
-  --amber:#F59E0B;--amber-light:#FFFBEB;--amber-dark:#92400E;
-  --green:#22C55E;--green-light:#F0FDF4;--green-dark:#166534;
-  --purple:#A78BFA;--purple-light:#F5F3FF;--purple-dark:#6D28D9;
-  --bg:#F0F4FF;--surface:#FFFFFF;--surface2:#F8FAFF;
-  --border:rgba(79,156,249,0.15);--border-soft:rgba(0,0,0,0.07);
-  --text:#1E293B;--text2:#64748B;--text3:#94A3B8;
-  --r:16px;--r-sm:10px;--r-lg:22px;--r-xl:28px;
-  --shadow:0 4px 20px rgba(79,156,249,.12),0 1px 4px rgba(0,0,0,.06);
-  --shadow-sm:0 2px 10px rgba(0,0,0,.07);
-  --nav-h:72px;
+  --sky:#2563EB;--sky-d:#1D4ED8;--sky-l:#EFF6FF;--sky-m:#BFDBFE;
+  --teal:#0F766E;--teal-l:#CCFBF1;--teal-m:#14B8A6;
+  --rose:#BE123C;--rose-l:#FFF1F2;--rose-m:#FB7185;
+  --amber:#92400E;--amber-l:#FFFBEB;--amber-m:#F59E0B;
+  --green:#166534;--green-l:#F0FDF4;--green-m:#22C55E;
+  --purple:#6D28D9;--purple-l:#F5F3FF;--purple-m:#A78BFA;
+  --orange:#C2410C;--orange-l:#FFF7ED;--orange-m:#F97316;
+  --inf:#7C3AED;--inf-l:#F5F3FF;--inf-m:#A78BFA;
+  --ext:#B45309;--ext-l:#FFFBEB;--ext-m:#D97706;
+  --bg:#F0F4FF;--sur:#FFFFFF;--sur2:#F8FAFF;
+  --bdr:rgba(37,99,235,.13);--bdr2:rgba(0,0,0,.07);
+  --txt:#1E293B;--txt2:#64748B;--txt3:#94A3B8;
+  --r:16px;--rl:22px;--rxl:28px;--nav:72px;
+  --sh:0 2px 12px rgba(0,0,0,.07);--sh2:0 4px 24px rgba(37,99,235,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
-body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);font-size:15px;overscroll-behavior:none}
-#splash{position:fixed;inset:0;background:linear-gradient(145deg,#1D4ED8 0%,#0F766E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--txt);font-size:15px;overscroll-behavior:none}
+#splash{position:fixed;inset:0;background:linear-gradient(145deg,#1D4ED8,#0F766E);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s}
 #splash.hide{opacity:0;pointer-events:none}
-.splash-logo{width:88px;height:88px;background:rgba(255,255,255,.18);border-radius:26px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:pop .6s cubic-bezier(.34,1.56,.64,1)}
-@keyframes pop{from{transform:scale(.5) rotate(-12deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
-#splash h1{font-size:28px;font-weight:700;color:#fff}
-#splash p{font-size:13px;color:rgba(255,255,255,.65);margin-top:5px}
-.splash-bar{width:50px;height:4px;background:rgba(255,255,255,.25);border-radius:99px;margin-top:36px;overflow:hidden}
-.splash-fill{height:100%;background:#fff;border-radius:99px;animation:fill 2s ease forwards}
-@keyframes fill{from{width:0}to{width:100%}}
-#app{height:100%;display:flex;flex-direction:column}
-.screen{position:absolute;inset:0;bottom:var(--nav-h);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;background:var(--bg)}
-.screen.active{display:block;animation:sIn .3s ease}
+.spl-logo{width:88px;height:88px;background:rgba(255,255,255,.18);border-radius:26px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;animation:pop .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+#splash h1{font-size:30px;font-weight:700;color:#fff}
+#splash p{font-size:12px;color:rgba(255,255,255,.65);margin-top:5px}
+.spl-bar{width:56px;height:4px;background:rgba(255,255,255,.22);border-radius:99px;margin-top:36px;overflow:hidden}
+.spl-fill{height:100%;background:#fff;border-radius:99px;animation:sbar 2.2s ease forwards}
+@keyframes sbar{from{width:0}to{width:100%}}
+#app{height:100%}
+.sc{position:absolute;inset:0;bottom:var(--nav);overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;background:var(--bg)}
+.sc.on{display:block;animation:sIn .3s ease}
 @keyframes sIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.topbar{background:rgba(255,255,255,.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:52px 16px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.topbar-left h2{font-size:18px;font-weight:700;color:var(--text)}
-.topbar-left p{font-size:11px;color:var(--text3);margin-top:1px}
-.icon-btn{width:38px;height:38px;border-radius:12px;border:none;background:var(--sky-light);color:var(--sky-dark);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
-.icon-btn:active{transform:scale(.9)}
-.bnav{height:var(--nav-h);background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 6px 8px;position:fixed;bottom:0;left:0;right:0;z-index:200;gap:2px}
-.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border-radius:14px;cursor:pointer;transition:all .2s;gap:3px;border:none;background:transparent;color:var(--text3);font-family:'Prompt',sans-serif}
-.ntab.active{background:var(--sky-light);color:var(--sky-dark)}
-.ntab svg{width:22px;height:22px}
+.pb{padding-bottom:20px}
+.topbar{background:rgba(255,255,255,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:50px 16px 12px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+.tb-title{font-size:18px;font-weight:700;color:var(--txt)}
+.tb-sub{font-size:11px;color:var(--txt3);margin-top:1px}
+.ib{width:38px;height:38px;border-radius:12px;border:none;background:var(--sky-l);color:var(--sky-d);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+.ib:active{transform:scale(.9)}
+.ibr{display:flex;gap:8px;align-items:center}
+.bnav{height:var(--nav);background:rgba(255,255,255,.94);backdrop-filter:blur(20px);border-top:1px solid var(--bdr);display:flex;align-items:center;padding:0 4px 8px;position:fixed;bottom:0;left:0;right:0;z-index:200;gap:2px}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px;border-radius:14px;cursor:pointer;transition:all .2s;gap:3px;border:none;background:transparent;color:var(--txt3);font-family:'Prompt',sans-serif}
+.ntab.on{background:var(--sky-l);color:var(--sky-d)}
+.ntab svg{width:21px;height:21px}
 .ntab span{font-size:10px;font-weight:500}
-.card{background:var(--surface);border-radius:var(--r-lg);padding:16px;margin:10px 14px 0;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
-.card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card-title svg{width:17px;height:17px;color:var(--sky-dark);flex-shrink:0}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 14px 0}
-.stat-box{background:var(--surface);border-radius:var(--r);padding:12px;text-align:center;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
-.stat-num{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
-.stat-label{font-size:10px;color:var(--text3);margin-top:4px;font-weight:500}
-.upload-z{border:2px dashed var(--sky-mid);border-radius:var(--r-lg);padding:24px 16px;text-align:center;cursor:pointer;background:var(--sky-light);transition:all .2s}
-.upload-z:active{transform:scale(.98)}
-.upload-icon{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 6px 20px rgba(79,156,249,.35)}
-.upload-icon svg{width:30px;height:30px;color:#fff}
-.upload-z h3{font-size:14px;font-weight:600;color:var(--sky-dark);margin-bottom:3px}
-.upload-z p{font-size:12px;color:var(--text2)}
-#prev-wrap{position:relative;border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px}
-#prev-img{width:100%;max-height:200px;object-fit:cover;display:none}
-.scan-ov{position:absolute;inset:0;display:none}
-.scan-ov.on{display:block}
-.scan-beam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--sky),var(--teal),transparent);animation:beam 1.4s ease-in-out infinite;box-shadow:0 0 10px rgba(79,156,249,.8)}
+.card{background:var(--sur);border-radius:var(--rl);padding:16px;margin:10px 14px 0;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.ct{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ct svg{width:17px;height:17px;color:var(--sky-d);flex-shrink:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 14px 0}
+.stat{background:var(--sur);border-radius:var(--r);padding:11px 8px;text-align:center;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.stat-n{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1.1}
+.stat-l{font-size:9px;color:var(--txt3);margin-top:3px;font-weight:500}
+.upz{border:2px dashed var(--sky-m);border-radius:var(--rl);padding:22px 16px;text-align:center;cursor:pointer;background:var(--sky-l);transition:all .2s}
+.upz:active{transform:scale(.98)}
+.up-ic{width:56px;height:56px;border-radius:17px;background:linear-gradient(135deg,var(--sky),var(--teal-m));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;box-shadow:0 6px 18px rgba(37,99,235,.28)}
+.up-ic svg{width:28px;height:28px;color:#fff}
+#pw{position:relative;border-radius:var(--rl);overflow:hidden;margin-bottom:12px}
+#pi{width:100%;max-height:200px;object-fit:cover;display:none;border-radius:var(--rl)}
+.sov{position:absolute;inset:0;display:none}
+.sov.on{display:block}
+.sbeam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--sky),var(--teal-m),transparent);animation:beam 1.4s ease-in-out infinite}
 @keyframes beam{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
 .corner{position:absolute;width:22px;height:22px;border-color:var(--sky);border-style:solid;border-radius:4px}
 .c-tl{top:8px;left:8px;border-width:3px 0 0 3px}
 .c-tr{top:8px;right:8px;border-width:3px 3px 0 0}
 .c-bl{bottom:8px;left:8px;border-width:0 0 3px 3px}
 .c-br{bottom:8px;right:8px;border-width:0 3px 3px 0}
-.ai-box{background:linear-gradient(135deg,#EFF6FF,#CCFBF1);border:1px solid var(--sky-mid);border-radius:var(--r-lg);padding:13px;display:none;margin-top:10px}
-.ai-box.show{display:block;animation:fu .4s ease}
-.ai-chip{display:inline-flex;align-items:center;gap:5px;background:var(--sky-dark);color:#fff;border-radius:99px;padding:4px 12px;font-size:11px;font-weight:500;margin-bottom:8px}
-.ai-chip svg{width:13px;height:13px}
-.ai-text{font-size:13px;color:#1E3A5F;line-height:1.7}
+.ai-box{background:linear-gradient(135deg,#EFF6FF,#CCFBF1);border:1px solid var(--sky-m);border-radius:var(--rl);padding:13px;display:none;margin-top:10px}
+.ai-box.on{display:block;animation:fu .4s ease}
+.ai-chip{display:inline-flex;align-items:center;gap:5px;background:var(--sky-d);color:#fff;border-radius:99px;padding:4px 12px;font-size:11px;font-weight:500;margin-bottom:8px}
+.ai-txt{font-size:13px;color:#1E3A5F;line-height:1.7}
 @keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.sym-item{border:1.5px solid var(--border-soft);border-radius:var(--r);padding:9px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface2);transition:all .16s;font-size:13px;color:var(--text2)}
-.sym-item.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:500}
-.sym-item:active{transform:scale(.95)}
-.sym-dot{width:8px;height:8px;border-radius:50%;background:var(--border-soft);flex-shrink:0;transition:all .16s}
-.sym-item.on .sym-dot{background:var(--sky)}
-.site-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.site-btn{border:1.5px solid var(--border-soft);border-radius:var(--r);padding:10px 6px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .16s;font-size:11px;color:var(--text2)}
-.site-btn.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:500}
-.site-btn:active{transform:scale(.93)}
-.site-btn svg{width:20px;height:20px;display:block;margin:0 auto 4px;opacity:.45;transition:opacity .16s}
-.site-btn.on svg{opacity:1}
-.slider-lrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.slider-lrow span{font-size:12px;color:var(--text2)}
-.sval{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;color:var(--sky-dark);background:var(--sky-light);padding:2px 9px;border-radius:7px}
-input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:99px;background:var(--sky-mid);outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--sky-dark));box-shadow:0 2px 8px rgba(79,156,249,.45);cursor:pointer}
-.grade-bar{display:flex;gap:4px;margin:12px 0}
-.gseg{flex:1;height:10px;border-radius:99px;transition:all .3s}
-.gseg.g0{background:#BBF7D0}.gseg.g1{background:#FDE68A}
-.gseg.g2{background:#FCA5A5}.gseg.g3{background:#F87171}.gseg.g4{background:#DC2626}
-.gseg.dim{opacity:.2}.gseg.act{transform:scaleY(2.3)}
-.vip-res{border-radius:var(--r-xl);padding:18px;display:flex;align-items:center;gap:14px;animation:fu .4s ease}
-.vip-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0;box-shadow:0 5px 18px rgba(0,0,0,.14)}
-.vip-title{font-size:16px;font-weight:700;margin-bottom:3px}
-.vip-sub{font-size:12px;opacity:.72;line-height:1.5}
-.plan-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.plan-item:last-child{border-bottom:none}
-.plan-ic{width:28px;height:28px;border-radius:9px;background:var(--sky-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
-.plan-text{font-size:13px;color:var(--text);line-height:1.6;padding-top:4px}
-.info{border-radius:var(--r-sm);padding:9px 13px;font-size:13px;line-height:1.6;margin-bottom:7px;border-left:3px solid}
-.ib{background:var(--sky-light);color:#1E3A8A;border-color:var(--sky)}
-.ig{background:var(--green-light);color:var(--green-dark);border-color:var(--green)}
-.ia{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber)}
-.ir{background:var(--rose-light);color:var(--rose-dark);border-color:var(--rose)}
-.it{background:var(--teal-light);color:var(--teal-dark);border-color:var(--teal)}
-.btn{width:100%;padding:14px;border-radius:var(--r-lg);font-family:'Prompt',sans-serif;font-size:15px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .16s;letter-spacing:-.01em}
+.np-box{border-radius:var(--r);padding:12px;margin-top:10px;display:none}
+.np-box.on{display:block}
+.np-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:12px;color:var(--txt);line-height:1.5}
+.np-item:last-child{border-bottom:none}
+.np-ic{width:22px;height:22px;border-radius:7px;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.seg-ctrl{display:flex;background:var(--bg);border-radius:12px;padding:3px;margin-bottom:14px;gap:3px}
+.seg-btn{flex:1;padding:8px 4px;border-radius:9px;border:none;background:transparent;font-family:'Prompt',sans-serif;font-size:12px;color:var(--txt2);cursor:pointer;transition:all .2s;font-weight:500;text-align:center}
+.seg-btn.on{background:var(--sur);color:var(--sky-d);box-shadow:var(--sh);font-weight:600}
+.seg-btn.on.phl{color:var(--sky-d)}
+.seg-btn.on.inf{color:var(--inf)}
+.seg-btn.on.ext{color:var(--ext)}
+.sym-g{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.sym{border:1.5px solid var(--bdr2);border-radius:var(--r);padding:9px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--sur2);transition:all .16s;font-size:13px;color:var(--txt2)}
+.sym.on{background:var(--sky-l);border-color:var(--sky);color:var(--sky-d);font-weight:500}
+.sym:active{transform:scale(.95)}
+.sym-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr2);flex-shrink:0;transition:all .16s}
+.sym.on .sym-dot{background:var(--sky)}
+.site-g{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sbtn{border:1.5px solid var(--bdr2);border-radius:var(--r);padding:9px 6px;text-align:center;cursor:pointer;background:var(--sur2);transition:all .16s;font-size:11px;color:var(--txt2)}
+.sbtn.on{background:var(--sky-l);border-color:var(--sky);color:var(--sky-d);font-weight:500}
+.sbtn:active{transform:scale(.93)}
+.sbtn svg{width:19px;height:19px;display:block;margin:0 auto 4px;opacity:.4;transition:.16s}
+.sbtn.on svg{opacity:1}
+.slrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.slrow span{font-size:12px;color:var(--txt2)}
+.slval{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--sky-d);background:var(--sky-l);padding:2px 9px;border-radius:7px}
+input[type=range]{width:100%;-webkit-appearance:none;height:5px;border-radius:99px;background:var(--sky-m);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--sky-d));box-shadow:0 2px 8px rgba(37,99,235,.4);cursor:pointer}
+.gbar{display:flex;gap:4px;margin:12px 0}
+.gs{flex:1;height:10px;border-radius:99px;transition:all .3s}
+.gs.g0{background:#BBF7D0}.gs.g1{background:#FDE68A}.gs.g2{background:#FCA5A5}.gs.g3{background:#F87171}.gs.g4{background:#DC2626}
+.gs.dim{opacity:.2}.gs.act{transform:scaleY(2.3)}
+.vres{border-radius:var(--rxl);padding:16px;display:flex;align-items:center;gap:14px;animation:fu .4s ease}
+.vcircle{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:700;flex-shrink:0;box-shadow:0 5px 16px rgba(0,0,0,.13)}
+.info{border-radius:0 var(--r) var(--r) 0;padding:9px 13px;font-size:13px;line-height:1.6;margin-bottom:7px;border-left:3px solid}
+.ib2{background:var(--sky-l);color:#1E3A8A;border-color:var(--sky)}
+.ig{background:var(--green-l);color:var(--green);border-color:var(--green-m)}
+.ia{background:var(--amber-l);color:var(--amber);border-color:var(--amber-m)}
+.ir{background:var(--rose-l);color:var(--rose);border-color:var(--rose-m)}
+.it{background:var(--teal-l);color:var(--teal);border-color:var(--teal-m)}
+.ip{background:var(--purple-l);color:var(--purple);border-color:var(--purple-m)}
+.btn{width:100%;padding:13px;border-radius:var(--rl);font-family:'Prompt',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .16s}
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-blue{background:linear-gradient(135deg,var(--sky),var(--sky-dark));color:#fff;box-shadow:0 6px 20px rgba(79,156,249,.4)}
-.btn-teal{background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:#fff;box-shadow:0 6px 20px rgba(20,184,166,.4)}
-.btn-outline{background:var(--surface);color:var(--sky-dark);border:1.5px solid var(--sky)}
-.btn-red{background:var(--rose-light);color:var(--rose-dark);border:1.5px solid var(--rose)}
-.flabel{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;display:block}
-.finput{width:100%;padding:10px 12px;border:1.5px solid var(--border-soft);border-radius:var(--r-sm);font-family:'Prompt',sans-serif;font-size:14px;color:var(--text);background:var(--surface);transition:border-color .15s;outline:none}
-.finput:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(79,156,249,.12)}
-select.finput{cursor:pointer}
-.tag{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:99px;font-size:12px;font-weight:500}
-.tag-b{background:var(--sky-light);color:var(--sky-dark)}
-.tag-t{background:var(--teal-light);color:var(--teal-dark)}
-.hist-item{background:var(--surface);border-radius:var(--r-lg);padding:13px 14px;margin:8px 14px 0;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
-.hist-item:active{transform:scale(.98)}
+.btn-blue{background:linear-gradient(135deg,var(--sky),var(--sky-d));color:#fff;box-shadow:0 6px 18px rgba(37,99,235,.38)}
+.btn-teal{background:linear-gradient(135deg,var(--teal-m),var(--teal));color:#fff;box-shadow:0 6px 18px rgba(20,184,166,.38)}
+.btn-purple{background:linear-gradient(135deg,var(--purple-m),var(--purple));color:#fff;box-shadow:0 6px 18px rgba(109,40,217,.3)}
+.btn-outline{background:var(--sur);color:var(--sky-d);border:1.5px solid var(--sky)}
+.btn-red{background:var(--rose-l);color:var(--rose);border:1.5px solid var(--rose-m)}
+.fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);margin-bottom:5px;display:block}
+.fi{width:100%;padding:10px 12px;border:1.5px solid var(--bdr2);border-radius:10px;font-family:'Prompt',sans-serif;font-size:13px;color:var(--txt);background:var(--sur);transition:border-color .15s;outline:none}
+.fi:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+select.fi{cursor:pointer}
+.hi{background:var(--sur);border-radius:var(--rl);padding:13px 14px;margin:8px 14px 0;box-shadow:var(--sh);border:1px solid var(--bdr);display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.hi:active{transform:scale(.98)}
 .hvip{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
-.hinfo h4{font-size:13px;font-weight:600;color:var(--text)}
-.hinfo p{font-size:11px;color:var(--text2);margin-top:2px}
-.htime{font-size:10px;color:var(--text3);margin-top:2px}
-.hact-btn{width:32px;height:32px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.hact-btn:active{transform:scale(.9)}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end}
-.modal-bg.open{display:flex;animation:mbIn .25s ease}
-@keyframes mbIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--surface);border-radius:28px 28px 0 0;padding:20px 16px 32px;width:100%;max-height:90vh;overflow-y:auto;animation:mIn .3s cubic-bezier(.34,1.56,.64,1)}
-@keyframes mIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-handle{width:40px;height:4px;background:var(--border-soft);border-radius:99px;margin:0 auto 18px}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.qr-hero{margin:14px 14px 0;background:linear-gradient(135deg,#7C3AED,var(--sky-dark));border-radius:var(--r-xl);padding:20px;color:#fff;text-align:center}
-.qr-hero h2{font-size:20px;font-weight:700;margin-bottom:5px}
-.qr-hero p{font-size:12px;color:rgba(255,255,255,.72)}
-.qr-box{background:var(--surface);border-radius:var(--r-xl);padding:18px;margin:10px 14px 0;text-align:center;box-shadow:var(--shadow)}
-#qr-wrap canvas{border-radius:14px;box-shadow:0 4px 18px rgba(79,156,249,.18)}
-.qr-url{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);background:var(--bg);padding:8px 10px;border-radius:8px;word-break:break-all;text-align:left;margin:12px 0}
-.scale-item{background:var(--surface);border-radius:var(--r-lg);padding:13px 14px;margin:8px 14px 0;display:flex;gap:12px;box-shadow:var(--shadow-sm);border:1px solid var(--border)}
-.snum{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
-.scont h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
-.scont p{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:5px}
-.sact{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
-.code-box{background:#1E293B;border-radius:var(--r-lg);padding:14px;overflow-x:auto;margin-top:8px}
+.hact{width:32px;height:32px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--sky-l);color:var(--sky-d);transition:.15s;flex-shrink:0}
+.hist-img{width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr)}
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end}
+.mbg.on{display:flex;animation:mbin .25s ease}
+@keyframes mbin{from{opacity:0}to{opacity:1}}
+.modal{background:var(--sur);border-radius:28px 28px 0 0;padding:20px 16px 32px;width:100%;max-height:92vh;overflow-y:auto;animation:min .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes min{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mhandle{width:40px;height:4px;background:var(--bdr2);border-radius:99px;margin:0 auto 16px}
+.mtitle{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.chart-wrap{position:relative;height:200px;margin:8px 0}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 14px 0}
+.chart-card{background:var(--sur);border-radius:var(--rl);padding:14px;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.chart-card h3{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.dash-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 14px 0}
+.dash-box{background:var(--sur);border-radius:var(--rl);padding:12px;box-shadow:var(--sh);border:1px solid var(--bdr);text-align:center}
+.dash-n{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1.1}
+.dash-l{font-size:10px;color:var(--txt3);margin-top:3px;font-weight:500}
+.scale-ref-item{border-radius:var(--r);padding:10px 12px;margin-bottom:7px;border-left:4px solid;display:flex;align-items:flex-start;gap:10px}
+.scale-grade-badge{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+.frow{padding:10px 14px 0;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.fbtn{padding:7px 14px;font-size:12px;border-radius:99px;white-space:nowrap;border:1.5px solid var(--bdr2);background:var(--sur);color:var(--txt2);font-family:'Prompt',sans-serif;cursor:pointer;font-weight:500;transition:.15s}
+.fbtn.on{background:var(--sky-l);border-color:var(--sky);color:var(--sky-d);font-weight:600}
+.qr-hero{margin:14px 14px 0;background:linear-gradient(135deg,#7C3AED,var(--sky-d));border-radius:var(--rxl);padding:20px;color:#fff;text-align:center}
+.qr-box{background:var(--sur);border-radius:var(--rxl);padding:18px;margin:10px 14px 0;text-align:center;box-shadow:var(--sh2)}
+#qw canvas{border-radius:14px;box-shadow:0 4px 18px rgba(37,99,235,.15)}
+.qurl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--txt3);background:var(--bg);padding:8px 10px;border-radius:8px;word-break:break-all;text-align:left;margin:12px 0}
+.code-box{background:#1E293B;border-radius:var(--rl);padding:14px;overflow-x:auto;margin-top:8px;position:relative}
 .code-box pre{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#94A3B8;line-height:1.75;white-space:pre}
-.toast-w{position:fixed;bottom:calc(var(--nav-h)+12px);left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:center;width:calc(100% - 28px);max-width:380px;pointer-events:none}
-.toast{background:rgba(15,23,42,.93);backdrop-filter:blur(16px);color:#fff;padding:11px 15px;border-radius:14px;font-size:13px;display:flex;align-items:center;gap:8px;animation:tIn .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.18)}
-.toast svg{width:16px;height:16px;flex-shrink:0}
-@keyframes tIn{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cbtn2{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Prompt',sans-serif}
+.tw{position:fixed;bottom:calc(var(--nav)+12px);left:50%;transform:translateX(-50%);z-index:1000;display:flex;flex-direction:column;gap:6px;align-items:center;width:calc(100% - 28px);max-width:380px;pointer-events:none}
+.toast{background:rgba(15,23,42,.93);backdrop-filter:blur(16px);color:#fff;padding:11px 15px;border-radius:14px;font-size:13px;display:flex;align-items:center;gap:8px;animation:tin .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+@keyframes tin{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .sheet-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:500}
-.sheet-ok{background:var(--green-light);color:var(--green-dark)}
-.sheet-pend{background:var(--amber-light);color:var(--amber-dark)}
-.filter-row{padding:10px 14px 0;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
-.filter-row::-webkit-scrollbar{display:none}
-.fbtn{padding:7px 14px;font-size:12px;border-radius:99px;white-space:nowrap;border:1.5px solid var(--border-soft);background:var(--surface);color:var(--text2);font-family:'Prompt',sans-serif;cursor:pointer;font-weight:500;transition:all .15s}
-.fbtn.on{background:var(--sky-light);border-color:var(--sky);color:var(--sky-dark);font-weight:600}
+.s-ok{background:var(--green-l);color:var(--green)}
+.s-no{background:var(--amber-l);color:var(--amber)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scale-tab{display:flex;gap:4px;margin-bottom:14px}
+.stab{flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid var(--bdr2);font-size:11px;font-weight:500;text-align:center;cursor:pointer;transition:all .15s;background:var(--sur2);color:var(--txt2)}
+.stab.on.phl{background:var(--sky-l);border-color:var(--sky);color:var(--sky-d)}
+.stab.on.inf{background:var(--inf-l);border-color:var(--inf-m);color:var(--inf)}
+.stab.on.ext{background:var(--ext-l);border-color:var(--ext-m);color:var(--ext)}
+.cqi-item{background:var(--sur);border-radius:var(--rl);padding:14px;margin:8px 14px 0;box-shadow:var(--sh);border:1px solid var(--bdr)}
+.progress-bar{height:7px;background:var(--bdr2);border-radius:99px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:99px;transition:width 1s ease}
+.type-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:600}
+.tc-phl{background:var(--sky-l);color:var(--sky-d)}
+.tc-inf{background:var(--inf-l);color:var(--inf)}
+.tc-ext{background:var(--ext-l);color:var(--ext)}
 </style>
 </head>
 <body>
- 
 <div id="splash">
-  <div class="splash-logo">
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-      <path d="M24 6C24 6 11 15 11 26C11 33.7 16.8 40 24 40C31.2 40 37 33.7 37 26C37 15 24 6 24 6Z" fill="white" opacity=".9"/>
-      <path d="M21 26h6M24 23v6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
+  <div class="spl-logo">
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <path d="M26 5C26 5 12 15 12 27C12 35.28 18.27 42 26 42C33.73 42 40 35.28 40 27C40 15 26 5 26 5Z" fill="white" opacity=".9"/>
+      <path d="M22 27h8M26 23v8" stroke="#1D4ED8" stroke-width="2.5" stroke-linecap="round"/>
     </svg>
   </div>
   <h1>SMART-P</h1>
-  <p>Smart Phlebitis Assessment</p>
-  <div class="splash-bar"><div class="splash-fill"></div></div>
+  <p>Phlebitis · Infiltration · Extravasation</p>
+  <div class="spl-bar"><div class="spl-fill"></div></div>
 </div>
- 
 <div id="app">
- 
+
 <!-- SCAN SCREEN -->
-<div class="screen active" id="sc-scan">
-<div style="padding-bottom:16px">
-  <div class="topbar">
-    <div class="topbar-left"><h2>สแกน IV Site — SMART-P</h2><p id="clk">—</p></div>
-    <div id="sheets-dot" class="sheet-badge sheet-pend">● ยังไม่เชื่อมต่อ</div>
+<div class="sc on" id="sc-scan"><div class="pb">
+<div class="topbar">
+  <div><div class="tb-title">SMART-P</div><div class="tb-sub" id="clk">—</div></div>
+  <div class="ibr"><div id="sdot" class="sheet-badge s-no">● ยังไม่เชื่อมต่อ</div></div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="st-d">0</div><div class="stat-l">วันนี้</div></div>
+  <div class="stat"><div class="stat-n" id="st-h" style="color:var(--rose-m)">0</div><div class="stat-l">Grade≥2</div></div>
+  <div class="stat"><div class="stat-n" id="st-m">0</div><div class="stat-l">เดือนนี้</div></div>
+  <div class="stat"><div class="stat-n" id="st-t">0</div><div class="stat-l">ทั้งหมด</div></div>
+</div>
+
+<!-- TYPE SELECTOR -->
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>เลือกประเภทภาวะแทรกซ้อน</div>
+  <div class="seg-ctrl">
+    <button class="seg-btn phl on" onclick="setType('phl',this)">🔴 Phlebitis</button>
+    <button class="seg-btn inf" onclick="setType('inf',this)">🟣 Infiltration</button>
+    <button class="seg-btn ext" onclick="setType('ext',this)">🟠 Extravasation</button>
   </div>
-  <div class="stats-row">
-    <div class="stat-box"><div class="stat-num" id="st-today">0</div><div class="stat-label">วันนี้</div></div>
-    <div class="stat-box"><div class="stat-num" id="st-high" style="color:var(--rose)">0</div><div class="stat-label">VIP≥2</div></div>
-    <div class="stat-box"><div class="stat-num" id="st-total">0</div><div class="stat-label">ทั้งหมด</div></div>
+  <div id="type-desc" class="info ib2" style="margin-bottom:0;font-size:12px">หลอดเลือดดำอักเสบ — ประเมิน VIP Scale Grade 0-4</div>
+</div>
+
+<!-- IMAGE UPLOAD -->
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>AI สแกน + เปรียบเทียบมาตรฐาน</div>
+  <div id="pw"><img id="pi" alt="IV site"><div class="sov" id="sov"><div class="sbeam"></div><div class="corner c-tl"></div><div class="corner c-tr"></div><div class="corner c-bl"></div><div class="corner c-br"></div></div></div>
+  <div class="upz" id="upz" onclick="document.getElementById('imi').click()">
+    <div class="up-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    <h3 style="font-size:14px;font-weight:600;color:var(--sky-d);margin-bottom:3px">ถ่ายภาพหรืออัพโหลด</h3>
+    <p style="font-size:12px;color:var(--txt2)">AI วิเคราะห์ + เปรียบเทียบ 3 Scale มาตรฐาน</p>
   </div>
+  <input type="file" id="imi" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
+  <div class="ai-box" id="aibox">
+    <div class="ai-chip"><svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Claude AI วิเคราะห์ + เปรียบเทียบมาตรฐาน</div>
+    <div class="ai-txt" id="aitxt"></div>
+  </div>
+  <div class="np-box" id="npbox">
+    <div style="font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><span id="np-title-txt">แผนการพยาบาล</span></div>
+    <div id="np-list"></div>
+  </div>
+</div>
+
+<!-- SYMPTOMS -->
+<div class="card" id="sym-card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span id="sym-title">อาการ Phlebitis</span></div>
+  <div class="sym-g" id="syms-phl" style="display:grid">
+    <div class="sym" onclick="toggleSym('pain',this)"><div class="sym-dot"></div>เจ็บปวด</div>
+    <div class="sym" onclick="toggleSym('red',this)"><div class="sym-dot"></div>ผิวแดง</div>
+    <div class="sym" onclick="toggleSym('swell',this)"><div class="sym-dot"></div>บวม</div>
+    <div class="sym" onclick="toggleSym('warm',this)"><div class="sym-dot"></div>ร้อน</div>
+    <div class="sym" onclick="toggleSym('streak',this)"><div class="sym-dot"></div>รอยแดงเส้น</div>
+    <div class="sym" onclick="toggleSym('cord',this)"><div class="sym-dot"></div>คลำก้อน</div>
+    <div class="sym" onclick="toggleSym('pus',this)"><div class="sym-dot"></div>มีหนอง</div>
+    <div class="sym" onclick="toggleSym('fever',this)"><div class="sym-dot"></div>ไข้</div>
+  </div>
+  <div class="sym-g" id="syms-inf" style="display:none">
+    <div class="sym" onclick="toggleSym('pain',this)"><div class="sym-dot"></div>เจ็บปวด</div>
+    <div class="sym" onclick="toggleSym('cool',this)"><div class="sym-dot"></div>ผิวเย็นซีด</div>
+    <div class="sym" onclick="toggleSym('swell',this)"><div class="sym-dot"></div>บวม</div>
+    <div class="sym" onclick="toggleSym('blister',this)"><div class="sym-dot"></div>ตุ่มน้ำ/ปริแตก</div>
+    <div class="sym" onclick="toggleSym('numb',this)"><div class="sym-dot"></div>ชา</div>
+    <div class="sym" onclick="toggleSym('tight',this)"><div class="sym-dot"></div>ตึง</div>
+    <div class="sym" onclick="toggleSym('clear',this)"><div class="sym-dot"></div>บวมใส</div>
+    <div class="sym" onclick="toggleSym('pit',this)"><div class="sym-dot"></div>กดบุ๋ม</div>
+  </div>
+  <div class="sym-g" id="syms-ext" style="display:none">
+    <div class="sym" onclick="toggleSym('pain',this)"><div class="sym-dot"></div>เจ็บปวด</div>
+    <div class="sym" onclick="toggleSym('swell',this)"><div class="sym-dot"></div>บวม</div>
+    <div class="sym" onclick="toggleSym('red',this)"><div class="sym-dot"></div>รอยแดง</div>
+    <div class="sym" onclick="toggleSym('blister',this)"><div class="sym-dot"></div>ตุ่มน้ำ/ปริแตก</div>
+    <div class="sym" onclick="toggleSym('necrosis',this)"><div class="sym-dot"></div>เนื้อตาย</div>
+    <div class="sym" onclick="toggleSym('streak',this)"><div class="sym-dot"></div>รอยแดงกระจาย</div>
+    <div class="sym" onclick="toggleSym('refill',this)"><div class="sym-dot"></div>Capillary refill ช้า</div>
+    <div class="sym" onclick="toggleSym('cool',this)"><div class="sym-dot"></div>ผิวเย็น/ร้อน</div>
+  </div>
+    <div class="sym" id="sy-streak" onclick="toggleSym('streak',this)"><div class="sym-dot"></div>รอยแดงเส้น</div>
+    <div class="sym" id="sy-cord" onclick="toggleSym('cord',this)"><div class="sym-dot"></div>คลำก้อน</div>
+    <div class="sym" id="sy-pus" onclick="toggleSym('pus',this)"><div class="sym-dot"></div>มีหนอง</div>
+    <div class="sym" id="sy-cool" onclick="toggleSym('cool',this)"><div class="sym-dot"></div>เย็นซีด</div>
+  </div>
+  <div style="margin-top:12px">
+    <div class="slrow"><span>ระยะเวลา IV</span><span class="slval" id="ivv">24 ชม.</span></div>
+    <input type="range" min="0" max="120" value="24" id="ivsl" oninput="document.getElementById('ivv').textContent=this.value+' ชม.'">
+  </div>
+</div>
+
+<!-- PATIENT -->
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>ข้อมูลผู้ป่วย</div>
+  <div class="grid2">
+    <div><label class="fl">HN</label><input class="fi" id="pthn" placeholder="HN001234"></div>
+    <div><label class="fl">ชื่อ-สกุล</label><input class="fi" id="ptnm" placeholder="ชื่อผู้ป่วย"></div>
+    <div><label class="fl">Ward</label><input class="fi" id="ptwd" placeholder="Med3, ICU"></div>
+    <div><label class="fl">พยาบาล</label><input class="fi" id="nsnm" placeholder="ชื่อพยาบาล"></div>
+  </div>
+  <div style="margin-top:8px"><label class="fl">สารน้ำ / ยา</label><input class="fi" id="ptdg" placeholder="0.9%NSS, Vancomycin..."></div>
+  <div style="margin-top:8px"><label class="fl">หมายเหตุ</label><input class="fi" id="ptnote" placeholder="ข้อมูลเพิ่มเติม"></div>
+</div>
+
+<div style="margin:12px 14px 0">
+  <button class="btn btn-blue" onclick="analyze()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    วิเคราะห์ + วางแผนพยาบาล AI
+  </button>
+</div>
+
+<!-- RESULT -->
+<div id="ressec" style="display:none">
   <div class="card">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      AI สแกนผิวหนัง (Claude Vision)
-    </div>
-    <div id="prev-wrap">
-      <img id="prev-img" alt="IV site">
-      <div class="scan-ov" id="scan-ov">
-        <div class="scan-beam"></div>
-        <div class="corner c-tl"></div><div class="corner c-tr"></div>
-        <div class="corner c-bl"></div><div class="corner c-br"></div>
-      </div>
-    </div>
-    <div class="upload-z" id="upz" onclick="document.getElementById('img-in').click()">
-      <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-      <h3>ถ่ายภาพหรืออัพโหลด</h3>
-      <p>แตะเพื่อเปิดกล้อง — AI วิเคราะห์ทันที</p>
-    </div>
-    <input type="file" id="img-in" accept="image/*" capture="environment" style="display:none" onchange="onImg(event)">
-    <div class="ai-box" id="ai-box">
-      <div class="ai-chip"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Claude AI วิเคราะห์ผล</div>
-      <div class="ai-text" id="ai-txt"></div>
+    <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span id="res-scale-title">ผล VIP Score</span></div>
+    <div class="gbar"><div class="gs g0 dim" id="gs0"></div><div class="gs g1 dim" id="gs1"></div><div class="gs g2 dim" id="gs2"></div><div class="gs g3 dim" id="gs3"></div><div class="gs g4 dim" id="gs4"></div></div>
+    <div class="vres" id="vres"><div class="vcircle" id="vc"></div><div><div id="vt" style="font-size:15px;font-weight:700;margin-bottom:3px"></div><div id="vs" style="font-size:12px;opacity:.72;line-height:1.5"></div></div></div>
+    <!-- Reference comparison -->
+    <div id="ref-compare" style="margin-top:10px;display:none">
+      <div style="font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px">📚 เปรียบเทียบกับมาตรฐาน</div>
+      <div id="ref-content"></div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>ตำแหน่ง IV Site</div>
-    <div class="site-grid">
-      <div class="site-btn" onclick="pickSite(this,'หลังมือ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 11V6a2 2 0 00-4 0v0M14 10V4a2 2 0 00-4 0v2M10 10.5V6a2 2 0 00-4 0v8M18 11a2 2 0 012 2v2.5c0 2.21-1.79 4-4 4H10a5 5 0 01-5-5V9"/></svg>หลังมือ ซ้าย</div>
-      <div class="site-btn" onclick="pickSite(this,'หลังมือ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 11V6a2 2 0 00-4 0v0M14 10V4a2 2 0 00-4 0v2M10 10.5V6a2 2 0 00-4 0v8M18 11a2 2 0 012 2v2.5c0 2.21-1.79 4-4 4H10a5 5 0 01-5-5V9"/></svg>หลังมือ ขวา</div>
-      <div class="site-btn" onclick="pickSite(this,'ข้อมือ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>ข้อมือ ซ้าย</div>
-      <div class="site-btn" onclick="pickSite(this,'ข้อมือ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>ข้อมือ ขวา</div>
-      <div class="site-btn" onclick="pickSite(this,'แขน ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14s0-3 4-5l4-2 2 1v3l-3 2-1 5M8 7V4a2 2 0 014 0v8"/></svg>แขน ซ้าย</div>
-      <div class="site-btn" onclick="pickSite(this,'แขน ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14s0-3 4-5l4-2 2 1v3l-3 2-1 5M8 7V4a2 2 0 014 0v8"/></svg>แขน ขวา</div>
-      <div class="site-btn" onclick="pickSite(this,'แขนพับ ซ้าย')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18s-5-5-1-9l6-6M15 3l2 2-6 6-2-2z"/></svg>แขนพับ ซ้าย</div>
-      <div class="site-btn" onclick="pickSite(this,'แขนพับ ขวา')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18s-5-5-1-9l6-6M15 3l2 2-6 6-2-2z"/></svg>แขนพับ ขวา</div>
-      <div class="site-btn" onclick="pickSite(this,'Central line')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Central line</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>อาการ</div>
-    <div class="sym-grid">
-      <div class="sym-item" id="sym-pain" onclick="toggleSym('pain',this)"><div class="sym-dot"></div>เจ็บปวด</div>
-      <div class="sym-item" id="sym-red" onclick="toggleSym('red',this)"><div class="sym-dot"></div>ผิวแดง</div>
-      <div class="sym-item" id="sym-swell" onclick="toggleSym('swell',this)"><div class="sym-dot"></div>บวม</div>
-      <div class="sym-item" id="sym-warm" onclick="toggleSym('warm',this)"><div class="sym-dot"></div>ร้อน</div>
-      <div class="sym-item" id="sym-streak" onclick="toggleSym('streak',this)"><div class="sym-dot"></div>รอยแดงเส้น</div>
-      <div class="sym-item" id="sym-cord" onclick="toggleSym('cord',this)"><div class="sym-dot"></div>คลำก้อน</div>
-      <div class="sym-item" id="sym-pus" onclick="toggleSym('pus',this)"><div class="sym-dot"></div>มีหนอง</div>
-      <div class="sym-item" id="sym-fever" onclick="toggleSym('fever',this)"><div class="sym-dot"></div>ไข้</div>
-    </div>
-    <div style="margin-top:13px">
-      <div class="slider-lrow"><span>ระยะเวลา IV</span><span class="sval" id="iv-v">24 ชม.</span></div>
-      <input type="range" min="0" max="120" value="24" id="iv-sl" oninput="document.getElementById('iv-v').textContent=this.value+' ชม.'">
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>ข้อมูลผู้ป่วย</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div><label class="flabel">HN</label><input class="finput" id="pt-hn" placeholder="HN001234"></div>
-      <div><label class="flabel">ชื่อ-สกุล</label><input class="finput" id="pt-name" placeholder="ชื่อผู้ป่วย"></div>
-      <div><label class="flabel">Ward</label><input class="finput" id="pt-ward" placeholder="Med3, ICU"></div>
-      <div><label class="flabel">พยาบาล</label><input class="finput" id="nurse-name" placeholder="ชื่อพยาบาล"></div>
-    </div>
-    <div style="margin-top:8px"><label class="flabel">สารน้ำ / ยา</label><input class="finput" id="pt-drug" placeholder="0.9%NSS, Vancomycin 1g..."></div>
-    <div style="margin-top:8px"><label class="flabel">หมายเหตุ</label><input class="finput" id="pt-note" placeholder="ข้อมูลเพิ่มเติม"></div>
-  </div>
-  <div style="margin:12px 14px 0">
-    <button class="btn btn-blue" id="abtn" onclick="analyze()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-      วิเคราะห์ + วางแผนพยาบาล
+  <div class="card"><div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>คำแนะนำ</div><div id="recbox"></div></div>
+  <div style="margin:10px 14px 0">
+    <button class="btn btn-teal" id="savebtn" onclick="saveRecord()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+      <span id="savetxt">บันทึก + รูปภาพลง Sheets</span>
     </button>
   </div>
-  <div id="res-sec" style="display:none">
-    <div class="card">
-      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ผล VIP Score</div>
-      <div class="grade-bar">
-        <div class="gseg g0 dim" id="gs0"></div><div class="gseg g1 dim" id="gs1"></div>
-        <div class="gseg g2 dim" id="gs2"></div><div class="gseg g3 dim" id="gs3"></div>
-        <div class="gseg g4 dim" id="gs4"></div>
-      </div>
-      <div class="vip-res" id="vip-r"><div class="vip-circle" id="vip-c"></div><div><div class="vip-title" id="vip-t"></div><div class="vip-sub" id="vip-s"></div></div></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>แผนการพยาบาล</div>
-      <div id="plan-list"></div>
-    </div>
-    <div class="card"><div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>คำแนะนำ</div><div id="rec-box"></div></div>
-    <div style="margin:10px 14px 0"><button class="btn btn-teal" id="save-btn" onclick="saveRecord()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg><span id="save-txt">บันทึก Google Sheets</span></button></div>
-    <div style="height:8px"></div>
-  </div>
+  <div style="height:8px"></div>
 </div>
+</div></div>
+
+<!-- DASHBOARD SCREEN -->
+<div class="sc" id="sc-dash"><div class="pb">
+<div class="topbar">
+  <div><div class="tb-title">Dashboard</div><div class="tb-sub">กราฟ & สรุปปีงบประมาณ</div></div>
+  <button class="ib" onclick="loadDash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
 </div>
- 
+<div style="margin:12px 14px 0;display:flex;gap:8px">
+  <select class="fi" id="fy-sel" onchange="loadDash()" style="flex:1"><option value="2568">ปีงบ 2568</option><option value="2567">ปีงบ 2567</option><option value="2566">ปีงบ 2566</option></select>
+  <select class="fi" id="ward-sel" onchange="loadDash()" style="flex:1"><option value="all">ทุก Ward</option></select>
+</div>
+<!-- Type breakdown -->
+<div class="dash-row">
+  <div class="dash-box"><div class="dash-n" id="d-phl" style="color:var(--sky-d)">0</div><div class="dash-l">🔴 Phlebitis</div></div>
+  <div class="dash-box"><div class="dash-n" id="d-inf" style="color:var(--inf)">0</div><div class="dash-l">🟣 Infiltration</div></div>
+  <div class="dash-box"><div class="dash-n" id="d-ext" style="color:var(--ext)">0</div><div class="dash-l">🟠 Extravasation</div></div>
+</div>
+<div class="dash-row">
+  <div class="dash-box"><div class="dash-n" id="d-total" style="color:var(--txt)">0</div><div class="dash-l">ทั้งหมด</div></div>
+  <div class="dash-box"><div class="dash-n" id="d-high" style="color:var(--rose-m)">0</div><div class="dash-l">Grade≥2</div></div>
+  <div class="dash-box"><div class="dash-n" id="d-rate" style="color:var(--amber-m)">0%</div><div class="dash-l">อัตราฯ</div></div>
+</div>
+<!-- Monthly chart -->
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>กราฟรายเดือน (ปีงบประมาณ)</div>
+  <div class="chart-wrap"><canvas id="monthChart"></canvas></div>
+</div>
+<!-- Type vs Grade chart -->
+<div class="chart-grid">
+  <div class="chart-card"><h3>🎯 แยกประเภท</h3><canvas id="typeChart"></canvas></div>
+  <div class="chart-card"><h3>📊 Grade Distribution</h3><canvas id="gradeChart"></canvas></div>
+</div>
+<!-- Site rate -->
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>อัตรา Grade≥2 แยกตำแหน่ง</div>
+  <div id="site-rate-list"></div>
+</div>
+<!-- Trend chart -->
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>แนวโน้มรายเดือน 3 Scale</div>
+  <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+</div>
+</div></div>
+
 <!-- HISTORY SCREEN -->
-<div class="screen" id="sc-history">
-<div style="padding-bottom:16px">
-  <div class="topbar">
-    <div class="topbar-left"><h2>ประวัติการประเมิน</h2><p id="hist-count">0 รายการ</p></div>
-    <div style="display:flex;gap:8px">
-      <button class="icon-btn" onclick="syncFromSheets()" title="ดึงจาก Sheets">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-      </button>
-      <button class="icon-btn" onclick="exportCSV()" title="Export CSV">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      </button>
-    </div>
-  </div>
-  <div class="filter-row">
-    <button class="fbtn on" id="f-all" onclick="filterHist('all')">ทั้งหมด</button>
-    <button class="fbtn" id="f-today" onclick="filterHist('today')">วันนี้</button>
-    <button class="fbtn" id="f-high" onclick="filterHist('high')" style="color:var(--rose-dark);border-color:var(--rose)">VIP≥2</button>
-    <button class="fbtn" id="f-ok" onclick="filterHist('ok')" style="color:var(--green-dark);border-color:var(--green)">ปกติ 0-1</button>
-  </div>
-  <div id="hist-list" style="margin-top:4px">
-    <div style="text-align:center;padding:50px 16px;color:var(--text3)">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 10px;display:block;opacity:.35"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <p style="font-size:13px">ยังไม่มีประวัติ</p>
-    </div>
+<div class="sc" id="sc-hist"><div class="pb">
+<div class="topbar">
+  <div><div class="tb-title">ประวัติ</div><div class="tb-sub" id="hcount">0 รายการ</div></div>
+  <div class="ibr">
+    <button class="ib" onclick="syncSheets()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
+    <button class="ib" onclick="exportCSV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
   </div>
 </div>
+<div class="frow">
+  <button class="fbtn on" id="f-all" onclick="filt('all')">ทั้งหมด</button>
+  <button class="fbtn" id="f-today" onclick="filt('today')">วันนี้</button>
+  <button class="fbtn" id="f-phl" onclick="filt('phl')" style="color:var(--sky-d)">🔴 Phlebitis</button>
+  <button class="fbtn" id="f-inf" onclick="filt('inf')" style="color:var(--inf)">🟣 Infiltration</button>
+  <button class="fbtn" id="f-ext" onclick="filt('ext')" style="color:var(--ext)">🟠 Extravasation</button>
+  <button class="fbtn" id="f-high" onclick="filt('high')" style="color:var(--rose)">Grade≥2</button>
 </div>
- 
-<!-- SCALE SCREEN -->
-<div class="screen" id="sc-scale">
-<div style="padding-bottom:16px">
-  <div class="topbar"><div class="topbar-left"><h2>VIP Scale</h2><p>Jackson, 1998</p></div></div>
-  <div style="padding:10px 14px 0"><div class="info it" style="margin-bottom:0">ประเมิน IV site ทุก 8–12 ชม. หรือทุกครั้งที่ให้ยา</div></div>
-  <div class="scale-item"><div class="snum" style="background:#D1FAE5;color:#065F46">0</div><div class="scont"><h4>ปกติ</h4><p>IV site ปกติ ไม่มีอาการ</p><span class="sact" style="background:#D1FAE5;color:#065F46">ดูแลต่อเนื่อง</span></div></div>
-  <div class="scale-item"><div class="snum" style="background:#FEF3C7;color:#92400E">1</div><div class="scont"><h4>Possible Phlebitis</h4><p>เริ่มเจ็บหรือผิวแดงเล็กน้อย</p><span class="sact" style="background:#FEF3C7;color:#92400E">ติดตามอาการ</span></div></div>
-  <div class="scale-item"><div class="snum" style="background:#FEE2E2;color:#991B1B">2</div><div class="scont"><h4>Early Phlebitis</h4><p>เจ็บ + แดง หรือบวม (2 ใน 3)</p><span class="sact" style="background:#FCA5A5;color:#7F1D1D">เปลี่ยนตำแหน่ง IV ทันที</span></div></div>
-  <div class="scale-item"><div class="snum" style="background:#FEE2E2;color:#7F1D1D">3</div><div class="scont"><h4>Medium Phlebitis</h4><p>เจ็บ + แดง + บวม + รอยเส้น + ก้อน</p><span class="sact" style="background:#F87171;color:#fff">เปลี่ยน + รายงานแพทย์</span></div></div>
-  <div class="scale-item"><div class="snum" style="background:#DC2626;color:#fff">4</div><div class="scont"><h4>Advanced / Thrombophlebitis</h4><p>ทุกอาการ + หนอง ± ไข้</p><span class="sact" style="background:#DC2626;color:#fff">ด่วน! ประเมิน Sepsis</span></div></div>
-  <div class="card" style="margin-top:10px">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>ความถี่ประเมิน</div>
-    <div class="info ig">ผู้ใหญ่ทั่วไป — ทุก 8–12 ชั่วโมง</div>
-    <div class="info ib">ยา Vesicant — ทุก 1–2 ชั่วโมง</div>
-    <div class="info ia">เด็ก / ผู้สูงอายุ — ทุก 1–4 ชั่วโมง</div>
-    <div class="info ir" style="margin-bottom:0">VIP ≥ 2 — ทุก 1 ชม. + รายงานแพทย์ทันที</div>
+<div id="hlist" style="margin-top:4px"></div>
+</div></div>
+
+<!-- SCALE REFERENCE SCREEN -->
+<div class="sc" id="sc-ref"><div class="pb">
+<div class="topbar"><div><div class="tb-title">Scale Reference</div><div class="tb-sub">มาตรฐาน 3 Scale</div></div></div>
+<div class="card" style="margin-top:10px">
+  <div class="scale-tab">
+    <div class="stab phl on" id="rt-phl" onclick="showRefTab('phl')">🔴 Phlebitis</div>
+    <div class="stab inf" id="rt-inf" onclick="showRefTab('inf')">🟣 Infiltration</div>
+    <div class="stab ext" id="rt-ext" onclick="showRefTab('ext')">🟠 Extravasation</div>
   </div>
-  <div style="height:16px"></div>
+  <div id="ref-tab-content"></div>
 </div>
+<div style="height:16px"></div>
+</div></div>
+
+<!-- SETUP SCREEN -->
+<div class="sc" id="sc-qr"><div class="pb">
+<div class="topbar"><div><div class="tb-title">แชร์ & ตั้งค่า</div><div class="tb-sub">QR + Google Sheets</div></div></div>
+<div class="qr-hero"><h2 style="font-size:20px;font-weight:700;margin-bottom:5px">📲 แชร์ให้ทีม</h2><p style="font-size:12px;color:rgba(255,255,255,.72)">สแกน QR เปิด SMART-P บนมือถือทุกเครื่อง</p></div>
+<div class="qr-box">
+  <div id="qw" style="display:flex;justify-content:center;padding:10px 0 14px"></div>
+  <div class="qurl" id="qurl">—</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-blue" onclick="cpUrl()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก URL</button>
+    <button class="btn btn-outline" onclick="dlQR()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>บันทึก QR รูปภาพ</button>
+  </div>
 </div>
- 
-<!-- QR SCREEN -->
-<div class="screen" id="sc-qr">
-<div style="padding-bottom:16px">
-  <div class="topbar"><div class="topbar-left"><h2>แชร์ & ตั้งค่า</h2><p>QR Code + Google Sheets</p></div></div>
-  <div class="qr-hero"><h2>📲 แชร์ให้ทีมพยาบาล</h2><p>สแกน QR Code เพื่อเปิด App บนมือถือทุกเครื่อง</p></div>
-  <div class="qr-box">
-    <div id="qr-wrap" style="display:flex;justify-content:center;padding:10px 0 14px"></div>
-    <div class="qr-url" id="qr-url-txt">—</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn btn-blue" onclick="copyUrl()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก URL</button>
-      <button class="btn btn-outline" onclick="saveQR()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>บันทึก QR รูปภาพ</button>
-    </div>
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Google Sheets</div>
+  <div class="info ib2" style="font-size:12px;margin-bottom:10px">Sheet: <strong>1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA</strong> — Sheet name: SMART-P</div>
+  <label class="fl">Apps Script Web App URL</label>
+  <input class="fi" id="gsurl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;margin-bottom:10px">
+  <div class="grid2">
+    <button class="btn btn-teal" onclick="saveGs()">บันทึก</button>
+    <button class="btn btn-outline" onclick="testGs()">ทดสอบ</button>
   </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Google Sheets</div>
-    <div class="info ib" style="margin-bottom:10px;font-size:12px"><strong>Sheet ID:</strong> 1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA<br>วาง Apps Script ด้านล่าง → Deploy → Web App URL มาใส่ด้านล่าง</div>
-    <label class="flabel">Apps Script Web App URL</label>
-    <input class="finput" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;margin-bottom:10px">
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-teal" onclick="saveGsUrl()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>บันทึก</button>
-      <button class="btn btn-outline" onclick="testConn()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0M12 20h.01"/></svg>ทดสอบ</button>
-    </div>
-    <div id="gs-status" style="margin-top:8px"></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Google Apps Script — วางใน Sheet นี้</div>
-    <div class="info ia" style="font-size:12px;margin-bottom:8px">Extensions → Apps Script → วางโค้ด → Deploy → Web App (Anyone can access)</div>
-    <div class="code-box"><pre id="gas-code">function doPost(e) {
+  <div id="gsstatus" style="margin-top:8px"></div>
+</div>
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Apps Script (วางใน Sheet นี้)</div>
+  <div class="info ia" style="font-size:12px;margin-bottom:8px">Extensions → Apps Script → Deploy → Web App (Anyone)</div>
+  <div class="code-box">
+    <button class="cbtn2" onclick="cpCode()">📋 คัดลอก</button>
+    <pre id="gascode">function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.openById(
       '1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA');
-    var sh = ss.getSheetByName('Phlebitis');
+    var sh = ss.getSheetByName('SMART-P');
     if (!sh) {
-      sh = ss.insertSheet('Phlebitis');
-      var hdr = ['ID','Timestamp','HN','ชื่อ-สกุล',
-        'Ward','Bed','ตำแหน่ง IV','VIP Score',
-        'Grade','อาการ','ระยะเวลา(ชม.)','สารน้ำ/ยา',
-        'พยาบาล','หมายเหตุ','AI วิเคราะห์'];
-      sh.appendRow(hdr);
-      sh.getRange(1,1,1,hdr.length)
+      sh = ss.insertSheet('SMART-P');
+      var h=['ID','Timestamp','ประเภท','HN',
+        'ชื่อ-สกุล','Ward','Bed','ตำแหน่ง IV',
+        'Grade','ระดับ','อาการ','ระยะเวลา(ชม.)',
+        'สารน้ำ/ยา','พยาบาล','หมายเหตุ',
+        'AI วิเคราะห์','แผนพยาบาล','รูปภาพ'];
+      sh.appendRow(h);
+      sh.getRange(1,1,1,h.length)
         .setFontWeight('bold')
-        .setBackground('#2563EB')
+        .setBackground('#1D4ED8')
         .setFontColor('#fff');
       sh.setFrozenRows(1);
     }
-    if (d._action === 'update' && d._rowIndex) {
-      var row = parseInt(d._rowIndex) + 1;
-      sh.getRange(row,2,1,14).setValues([[
-        d.ts,d.hn,d.name,d.ward,d.bed,
-        d.site,d.vip,d.grade,d.syms,
-        d.hours,d.drugs,d.nurse,
-        d.notes,d.aiText||'']]);
-      return ContentService.createTextOutput(
-        JSON.stringify({ok:true,action:'updated'}))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (d._action==='update' && d._ri) {
+      sh.getRange(parseInt(d._ri)+1,2,1,17)
+        .setValues([[d.ts,d.type,d.hn,d.name,
+          d.ward,d.bed,d.site,d.grade,d.gradeLbl,
+          d.syms,d.hours,d.drugs,d.nurse,d.notes,
+          d.aiTxt,d.npTxt,d.img||'']]);
+      return ok({action:'updated'});
     }
-    if (d._action === 'delete' && d._rowIndex) {
-      sh.deleteRow(parseInt(d._rowIndex)+1);
-      return ContentService.createTextOutput(
-        JSON.stringify({ok:true,action:'deleted'}))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (d._action==='delete'&&d._ri) {
+      sh.deleteRow(parseInt(d._ri)+1);
+      return ok({action:'deleted'});
     }
-    var newId = 'PH'+new Date().getTime();
-    sh.appendRow([newId,d.ts,d.hn,d.name,
-      d.ward,d.bed,d.site,d.vip,d.grade,
-      d.syms,d.hours,d.drugs,d.nurse,
-      d.notes,d.aiText||'']);
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:true,id:newId,
-        row:sh.getLastRow()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:false,error:err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+    var id='SMARTP-'+Date.now();
+    sh.appendRow([id,d.ts,d.type,d.hn,d.name,
+      d.ward,d.bed,d.site,d.grade,d.gradeLbl,
+      d.syms,d.hours,d.drugs,d.nurse,d.notes,
+      d.aiTxt,d.npTxt,d.img||'']);
+    // Insert image in col 18 if exists
+    if (d.img && d.img.length > 100) {
+      try {
+        var imgData = Utilities.base64Decode(d.img);
+        var blob = Utilities.newBlob(imgData,'image/jpeg','iv_site.jpg');
+        var folder = DriveApp.getRootFolder();
+        var file = folder.createFile(blob);
+        file.setSharing(DriveApp.Access.ANYONE,DriveApp.Permission.VIEW);
+        var imgUrl = 'https://drive.google.com/uc?id='+file.getId();
+        sh.getRange(sh.getLastRow(),18).setValue('=IMAGE("'+imgUrl+'",4,60,80)');
+      } catch(imgErr){}
+    }
+    return ok({id:id,row:sh.getLastRow()});
+  } catch(err){return err_(err.toString());}
 }
-function doGet(e) {
-  try {
-    var ss = SpreadsheetApp.openById(
+function doGet(e){
+  try{
+    var ss=SpreadsheetApp.openById(
       '1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA');
-    var sh = ss.getSheetByName('Phlebitis');
-    if (!sh) return ContentService.createTextOutput(
-      JSON.stringify({ok:true,rows:[]}))
-      .setMimeType(ContentService.MimeType.JSON);
-    var vals = sh.getDataRange().getValues();
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:true,rows:vals}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ok:false,error:err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}</pre></div>
-    <button class="btn btn-outline" onclick="copyCode()" style="margin-top:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก Script</button>
+    var sh=ss.getSheetByName('SMART-P');
+    if(!sh)return ok({rows:[]});
+    return ok({rows:sh.getDataRange().getValues()});
+  }catch(err){return err_(err.toString());}
+}
+function ok(d){return ContentService.createTextOutput(JSON.stringify(Object.assign({ok:true},d))).setMimeType(ContentService.MimeType.JSON);}
+function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false,error:m})).setMimeType(ContentService.MimeType.JSON);}</pre>
   </div>
-  <div style="height:16px"></div>
+  <button class="btn btn-outline" onclick="cpCode()" style="margin-top:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอก Script</button>
 </div>
-</div>
- 
+<div style="height:16px"></div>
+</div></div>
+
 </div><!-- /app -->
- 
+
 <nav class="bnav">
-  <button class="ntab active" onclick="goTo('scan')" id="nav-scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg><span>สแกน</span></button>
-  <button class="ntab" onclick="goTo('history')" id="nav-history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>ประวัติ</span></button>
-  <button class="ntab" onclick="goTo('scale')" id="nav-scale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>VIP Scale</span></button>
-  <button class="ntab" onclick="goTo('qr')" id="nav-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h3M18 18v3M14 18h2v3"/></svg><span>แชร์</span></button>
+  <button class="ntab on" onclick="goTo('scan')" id="n-scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg><span>สแกน</span></button>
+  <button class="ntab" onclick="goTo('dash')" id="n-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></button>
+  <button class="ntab" onclick="goTo('hist')" id="n-hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>ประวัติ</span></button>
+  <button class="ntab" onclick="goTo('ref')" id="n-ref"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Scale Ref</span></button>
+  <button class="ntab" onclick="goTo('qr')" id="n-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h3M18 18v3M14 18h2v3"/></svg><span>แชร์</span></button>
 </nav>
- 
+
 <!-- EDIT MODAL -->
-<div class="modal-bg" id="edit-modal">
+<div class="mbg" id="emod">
   <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไขข้อมูล</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div><label class="flabel">HN</label><input class="finput" id="e-hn"></div>
-      <div><label class="flabel">ชื่อ-สกุล</label><input class="finput" id="e-name"></div>
-      <div><label class="flabel">Ward</label><input class="finput" id="e-ward"></div>
-      <div><label class="flabel">Bed</label><input class="finput" id="e-bed"></div>
+    <div class="mhandle"></div>
+    <div class="mtitle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไขข้อมูล</div>
+    <div class="grid2" style="margin-bottom:8px">
+      <div><label class="fl">HN</label><input class="fi" id="e-hn"></div>
+      <div><label class="fl">ชื่อ-สกุล</label><input class="fi" id="e-nm"></div>
+      <div><label class="fl">Ward</label><input class="fi" id="e-wd"></div>
+      <div><label class="fl">ตำแหน่ง IV</label><input class="fi" id="e-site"></div>
     </div>
-    <div style="margin-bottom:8px"><label class="flabel">ตำแหน่ง IV Site</label><input class="finput" id="e-site"></div>
-    <div style="margin-bottom:8px"><label class="flabel">VIP Score (0-4)</label>
-      <select class="finput" id="e-vip"><option value="0">0 — ปกติ</option><option value="1">1 — Possible</option><option value="2">2 — Early</option><option value="3">3 — Medium</option><option value="4">4 — Advanced</option></select>
+    <div style="margin-bottom:8px"><label class="fl">ประเภท</label>
+      <select class="fi" id="e-type"><option value="Phlebitis">Phlebitis</option><option value="Infiltration">Infiltration</option><option value="Extravasation">Extravasation</option></select>
     </div>
-    <div style="margin-bottom:8px"><label class="flabel">อาการ</label><input class="finput" id="e-syms"></div>
-    <div style="margin-bottom:8px"><label class="flabel">สารน้ำ / ยา</label><input class="finput" id="e-drugs"></div>
-    <div style="margin-bottom:8px"><label class="flabel">พยาบาล</label><input class="finput" id="e-nurse"></div>
-    <div style="margin-bottom:14px"><label class="flabel">หมายเหตุ</label><input class="finput" id="e-notes"></div>
+    <div style="margin-bottom:8px"><label class="fl">Grade (0-4)</label>
+      <select class="fi" id="e-grade"><option value="0">0 — ปกติ</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+    </div>
+    <div style="margin-bottom:8px"><label class="fl">อาการ</label><input class="fi" id="e-syms"></div>
+    <div style="margin-bottom:8px"><label class="fl">สารน้ำ/ยา</label><input class="fi" id="e-drugs"></div>
+    <div style="margin-bottom:8px"><label class="fl">พยาบาล</label><input class="fi" id="e-nurse"></div>
+    <div style="margin-bottom:14px"><label class="fl">หมายเหตุ</label><input class="fi" id="e-notes"></div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-teal" onclick="confirmEdit()" style="flex:2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>บันทึกการแก้ไข</button>
-      <button class="btn btn-red" onclick="confirmDelete()" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>ลบ</button>
-      <button class="btn btn-outline" onclick="closeModal()" style="flex:1;font-size:13px">ยกเลิก</button>
+      <button class="btn btn-teal" onclick="confirmEdit()" style="flex:2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>บันทึก</button>
+      <button class="btn btn-red" onclick="confirmDel()" style="flex:1">ลบ</button>
+      <button class="btn btn-outline" onclick="closeMod()" style="flex:1;font-size:13px">ยกเลิก</button>
     </div>
   </div>
 </div>
- 
-<div class="toast-w" id="tw"></div>
- 
+
+<div class="tw" id="tw"></div>
+
 <script>
-var SHEET_ID='1Umj26c76Gx-0fkxgH-eD1v0HE1ItBHOx7HVbC1AGpBA';
-var S={site:'',grade:-1,imgB64:'',syms:{},history:JSON.parse(localStorage.getItem('ph_v3')||'[]'),gsUrl:localStorage.getItem('ph_gs3')||'',editIdx:-1,aiText:''};
-var GRADES=[
-  {label:'Grade 0 — ปกติ',desc:'IV site ปกติ ไม่พบสัญญาณ Phlebitis',bg:'#ECFDF5',tc:'#065F46',cc:'#10B981'},
-  {label:'Grade 1 — Possible Phlebitis',desc:'เริ่มมีสัญญาณ ติดตามอาการ',bg:'#FFFBEB',tc:'#92400E',cc:'#F59E0B'},
-  {label:'Grade 2 — Early Phlebitis',desc:'อักเสบระยะต้น เปลี่ยนตำแหน่ง IV',bg:'#FFF7ED',tc:'#C2410C',cc:'#F97316'},
-  {label:'Grade 3 — Medium Phlebitis',desc:'อักเสบปานกลาง รายงานแพทย์ทันที',bg:'#FFF1F2',tc:'#9F1239',cc:'#F43F5E'},
-  {label:'Grade 4 — Advanced/Thrombophlebitis',desc:'รุนแรง ด่วนมาก ประเมิน Sepsis',bg:'#FEF2F2',tc:'#7F1D1D',cc:'#DC2626'}
-];
+// ═══════════════════════════════════
+//  REFERENCE DATA (from the 3 images)
+// ═══════════════════════════════════
+var REF = {
+  phl: {
+    name: 'Phlebitis Scale', src: 'Infusion Nurse Network of Thailand',
+    color: '#2563EB', light: '#EFF6FF',
+    grades: [
+      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'Observe IV site, Monitor', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'แดงรอบตำแหน่งแทงเข็ม ปวดหรือไม่ปวดก็ได้ (Erythema ± pain)', care:'Change IV site, Monitor', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ปวด + แดงรอบตำแหน่งแทงเข็ม บวมหรือไม่บวมก็ได้ (Pain + erythema ± edema)', care:'Change IV site, Dry warm compress, Elevate limb, Monitor', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ปวดรอบตำแหน่งแทงเข็ม + รอยแดง + มีรอยแดงเป็นเส้น (Streak) + คลำหลอดเลือดแข็ง (Cord)', care:'Change IV site, Dry warm compress, Elevate limb, Notify physician, Incident report, Monitor', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'ปวด + แดง + รอยเส้น + คลำก้อนแข็ง >1 นิ้ว + มีหนอง (Purulent drainage)', care:'Change IV site, Dry warm compress, Elevate limb, Notify physician, Incident report, Monitor', color:'#DC2626', tc:'#fff' }
+    ]
+  },
+  inf: {
+    name: 'Infiltration Scale', src: 'Infusion Nurses Network Association (2024)',
+    color: '#7C3AED', light: '#F5F3FF',
+    grades: [
+      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'ประเมินตำแหน่ง ความถี่ ลักษณะผู้ป่วย ชนิดสารน้ำ/ยา', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'ผิวเย็น ซีด บวม <1 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'หยุดสารน้ำ/ยาทันที, ตรวจสอบสายสวน, ถอดสายสวน, เปลี่ยนตำแหน่ง, ประเมินเหมือน Grade 0', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ผิวเย็น ซีด บวม 1-6 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'การพยาบาลเหมือน Grade 1, ยกบริเวณที่เกิด Infiltration ให้สูง', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ผิวเย็นซีด บวมใส บวมอย่างเห็นได้ชัด >6 นิ้ว ปวดเล็กน้อยถึงปานกลาง อาจมีอาการชา', care:'การพยาบาลเหมือน Grade 2, บันทึก/ถ่ายภาพ วัดลักษณะผิวหนัง ดูแลความสุขสบาย รายงานแพทย์', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'ผิวเย็นซีด บวมใส ตึง มีตุ่มน้ำ ผิวหนังปริแตก บวมอย่างเห็นได้ชัด >6 นิ้ว กดบุ๋ม ปวดปานกลางถึงรุนแรง การไหลเวียนเลือดลดลง', care:'การพยาบาลเหมือน Grade 3, รายงานแพทย์เพื่อพิจารณารักษาโดยด่วน ระวัง Compartment Syndrome', color:'#DC2626', tc:'#fff' }
+    ]
+  },
+  ext: {
+    name: 'Extravasation Scale', src: 'Infusion Nurses Network Association (2024)',
+    color: '#B45309', light: '#FFFBEB',
+    grades: [
+      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'ประเมินตำแหน่ง ความถี่ ลักษณะผู้ป่วย ชนิดสารน้ำ/ยา', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'ปวดบริเวณที่ให้สารน้ำ/ยา ไม่แดง บวมน้อย (1-10%) Swelling', care:'หยุดสารน้ำ/ยาและปลด IV SET, ดูดสารน้ำ/ยาออก, ถอดสายสวน, Dry warm/cold compress, ถ่ายภาพ บันทึก, ประเมิน 8 ชม./2 วัน', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ปวด บวมเล็กน้อย (10-25%) เริ่มรอยแดงกระจายตำแหน่งที่มีการรั่วซึม คล้าย Capillary refill 1-2 วินาที', care:'การพยาบาลเหมือน Grade 1, รายงานแพทย์พิจารณาให้ Antidote', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ปวด บวมปานกลาง (25-50%) มีรอยแดงกระจายและรอบๆ ตำแหน่ง ซีก (Vasopressor) Capillary refill 1-2 วินาที', care:'การพยาบาลเหมือน Grade 2, ดูแลผลไม่ดีขึ้นใน 7 วัน รายงานศัลยแพทย์ ติดตามอาการอย่างน้อยวันละครั้ง', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'ปวด บวมมาก (>50%) รอยแดงมากเกินขอบเขตรอยบวม ซีก (Non-vasopressor) Capillary refill >4 วินาที ผิวหนังปริแตก มีตุ่มน้ำหรือเนื้อตาย', care:'การพยาบาลเหมือน Grade 3, ห้าม Dry warm/cold compress, ทำแผลแบบ Wet dressing ด้วย NSS', color:'#DC2626', tc:'#fff' }
+    ]
+  }
+};
+
+// ═══════════════════════
+//  GRADE DATA per type
+// ═══════════════════════
+function getGrades(type) {
+  return REF[type].grades.map(g => ({
+    l: type==='phl'?'Phlebitis Grade '+g.g:(type==='inf'?'Infiltration Grade '+g.g:'Extravasation Grade '+g.g),
+    d: g.syms, bg: g.color==='#BBF7D0'?'#ECFDF5':g.color==='#FDE68A'?'#FFFBEB':g.color==='#FCA5A5'?'#FFF7ED':g.color==='#F87171'?'#FFF1F2':'#FEF2F2',
+    tc: g.tc==='#fff'?'#7F1D1D':g.tc, cc: g.color
+  }));
+}
+
+// ═══════════════════════
+//  STATE
+// ═══════════════════════
+var S = {
+  type:'phl', site:'', grade:-1,
+  imgB64:'', imgThumb:'',
+  syms:{}, history:JSON.parse(localStorage.getItem('smp_v5')||'[]'),
+  gsUrl:localStorage.getItem('smp_gs5')||'',
+  editIdx:-1, hFilter:'all',
+  aiTxt:'', npTxt:'',
+  charts:{}
+};
 var GBG=['#D1FAE5','#FEF3C7','#FED7AA','#FECDD3','#FECACA'];
 var GTC=['#065F46','#92400E','#C2410C','#9F1239','#7F1D1D'];
-var histFilter='all';
- 
+var MONTHS=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+var TYPE_LABELS={'Phlebitis':'🔴 Phlebitis','Infiltration':'🟣 Infiltration','Extravasation':'🟠 Extravasation'};
+var TYPE_COLORS={'Phlebitis':'#2563EB','Infiltration':'#7C3AED','Extravasation':'#B45309'};
+
 window.addEventListener('load',()=>{
   setTimeout(()=>{
     document.getElementById('splash').classList.add('hide');
-    updateStats();updateClock();setInterval(updateClock,1000);
-    initQR();
-    document.getElementById('gs-url').value=S.gsUrl;
-    updateSheetsBadge();
-  },2100);
+    updateStats(); updateClock(); setInterval(updateClock,1000);
+    initQR(); showRefTab('phl');
+    document.getElementById('gsurl').value = S.gsUrl;
+    updateDot(); updateSymGrid();
+  },2200);
 });
 function updateClock(){document.getElementById('clk').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+
 function goTo(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
-  document.getElementById('sc-'+id).classList.add('active');
-  document.getElementById('nav-'+id).classList.add('active');
-  if(id==='history')renderHistory();
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('on'));
+  document.getElementById('sc-'+id).classList.add('on');
+  document.getElementById('n-'+id).classList.add('on');
+  if(id==='hist')renderHist();
+  if(id==='dash')loadDash();
 }
-function onImg(ev){
-  var f=ev.target.files[0];if(!f)return;
+
+// ── TYPE SELECTOR ──
+function setType(t, el) {
+  S.type = t;
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  var descs = {
+    phl:'หลอดเลือดดำอักเสบ — ประเมิน VIP Scale Grade 0-4 (Infusion Nurse Network of Thailand)',
+    inf:'สารน้ำซึมเข้าเนื้อเยื่อ — Infiltration Scale Grade 0-4 (Infusion Nurses Network Association)',
+    ext:'สารน้ำ/ยาซึมเข้าเนื้อเยื่อรอบๆ — Extravasation Scale Grade 0-4 (Infusion Nurses Network Association)'
+  };
+  document.getElementById('type-desc').textContent = descs[t];
+  document.getElementById('type-desc').className = 'info '+(t==='phl'?'ib2':t==='inf'?'ip':'ia')+' margin-bottom:0;font-size:12px';
+  updateSymGrid();
+  // reset symptoms
+  S.syms = {};
+  document.querySelectorAll('.sym').forEach(s=>{s.classList.remove('on');s.querySelector('.sym-dot').style.background='var(--bdr2)';});
+}
+
+function updateSymGrid() {
+  var t = S.type;
+  document.getElementById('sym-title').textContent = t==='phl'?'อาการ Phlebitis':t==='inf'?'อาการ Infiltration':'อาการ Extravasation';
+  document.getElementById('syms-phl').style.display = t==='phl'?'grid':'none';
+  document.getElementById('syms-inf').style.display = t==='inf'?'grid':'none';
+  document.getElementById('syms-ext').style.display = t==='ext'?'grid':'none';
+}
+
+// ── IMAGE ──
+function onImg(ev) {
+  var f=ev.target.files[0]; if(!f)return;
   var r=new FileReader();
   r.onload=async e=>{
-    S.imgB64=e.target.result.split(',')[1];
-    var img=document.getElementById('prev-img');
-    img.src=e.target.result;img.style.display='block';
+    var full=e.target.result;
+    S.imgB64=full.split(',')[1];
+    var img2=new Image();
+    img2.onload=function(){
+      var canvas=document.createElement('canvas'),max=400,w=img2.width,h=img2.height;
+      if(w>max){h=h*max/w;w=max;} if(h>max){w=w*max/h;h=max;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img2,0,0,w,h);
+      S.imgThumb=canvas.toDataURL('image/jpeg',0.6).split(',')[1];
+    };
+    img2.src=full;
+    document.getElementById('pi').src=full; document.getElementById('pi').style.display='block';
     document.getElementById('upz').style.display='none';
-    document.getElementById('scan-ov').classList.add('on');
-    toast('AI กำลังวิเคราะห์ภาพ...','blue');
+    document.getElementById('sov').classList.add('on');
+    toast('AI กำลังวิเคราะห์ + เปรียบเทียบมาตรฐาน...','blue');
     await aiScan(S.imgB64);
-    document.getElementById('scan-ov').classList.remove('on');
+    document.getElementById('sov').classList.remove('on');
   };
   r.readAsDataURL(f);
 }
-async function aiScan(b64){
-  S.aiText='';
-  try{
+
+async function aiScan(b64) {
+  S.aiTxt=''; S.npTxt='';
+  var typeNames={phl:'Phlebitis (VIP Scale)',inf:'Infiltration Scale',ext:'Extravasation Scale'};
+  var prompt = 'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้โดยเปรียบเทียบกับ '+typeNames[S.type]+' มาตรฐาน ตอบภาษาไทยแบ่งเป็น 2 ส่วน:\n\n[วิเคราะห์]: (3-4 ประโยค) สัญญาณที่เห็น + Grade ที่ประเมิน (0-4) + เหตุผลเปรียบเทียบกับมาตรฐาน '+typeNames[S.type]+'\n\n[แผนพยาบาล]: ระบุ 4-6 ข้อตามมาตรฐาน แต่ละข้อขึ้นต้นด้วย "- "';
+  try {
     var res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-          {type:'text',text:'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้อย่างรวดเร็ว ตอบภาษาไทย 3-4 ประโยค:\n1. สัญญาณที่เห็น (สี ความแดง บวม รอยผิดปกติ)\n2. ระดับ VIP Score ที่ประเมินได้ (0-4)\n3. คำแนะนำเร่งด่วน'}
+          {type:'text',text:prompt}
         ]}]})
     });
     var data=await res.json();
     var txt=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
     if(txt){
-      S.aiText=txt;
-      document.getElementById('ai-txt').textContent=txt;
-      document.getElementById('ai-box').classList.add('show');
-      autoFill(txt);
-      toast('AI วิเคราะห์เสร็จแล้ว ✓','green');
+      var parts=txt.split('[แผนพยาบาล]');
+      S.aiTxt=parts[0].replace('[วิเคราะห์]','').trim();
+      S.npTxt=parts[1]?parts[1].trim():'';
+      document.getElementById('aitxt').textContent=S.aiTxt;
+      document.getElementById('aibox').classList.add('on');
+      if(S.npTxt){
+        var items=S.npTxt.split('\n').filter(function(l){return l.trim().indexOf('-')===0;});
+        var colors={phl:'#1D4ED8',inf:'#7C3AED',ext:'#B45309'};
+        document.getElementById('np-title-txt').textContent='แผนการพยาบาล '+{phl:'Phlebitis',inf:'Infiltration',ext:'Extravasation'}[S.type];
+        document.getElementById('np-list').innerHTML=items.map((l,i)=>'<div class="np-item"><div class="np-ic" style="background:'+colors[S.type]+'">'+(i+1)+'</div><div style="flex:1;font-size:12px;line-height:1.5;padding-top:2px">'+l.replace(/^-\s*/,'')+'</div></div>').join('');
+        var bgs={phl:'var(--sky-l)',inf:'var(--inf-l)',ext:'var(--ext-l)'};
+        document.getElementById('npbox').style.background=bgs[S.type];
+        document.getElementById('npbox').classList.add('on');
+      }
+      autoFill(S.aiTxt);
+      toast('AI วิเคราะห์เสร็จ ✓','green');
     }
-  }catch(e){toast('เชื่อมต่อ AI ไม่ได้ กรอกอาการเองได้เลย','amber');}
+  } catch(e){toast('AI ไม่ได้ กรอกเองได้ค่ะ','amber');}
 }
-function autoFill(txt){
-  var t=txt.toLowerCase();
-  var map={pain:['เจ็บ','ปวด'],red:['แดง'],swell:['บวม'],warm:['ร้อน'],streak:['เส้น','streak'],cord:['ก้อน','cord'],pus:['หนอง'],fever:['ไข้']};
-  Object.entries(map).forEach(([k,kws])=>{
-    if(kws.some(w=>t.includes(w))){
+
+function autoFill(t){
+  var tl=t.toLowerCase();
+  var m={pain:['เจ็บ','ปวด'],red:['แดง'],swell:['บวม'],warm:['ร้อน'],streak:['เส้น'],cord:['ก้อน'],pus:['หนอง'],fever:['ไข้'],cool:['เย็น','ซีด'],blister:['ตุ่ม','ปริ'],numb:['ชา'],necrosis:['ตาย','เนื้อตาย'],refill:['capillary','รีฟิล']};
+  Object.entries(m).forEach(([k,kws])=>{
+    if(kws.some(w=>tl.includes(w))){
       S.syms[k]=true;
-      var el=document.getElementById('sym-'+k);
+      var el=document.getElementById('sy-'+k);
       if(el){el.classList.add('on');el.querySelector('.sym-dot').style.background='var(--sky)';}
     }
   });
 }
-function toggleSym(key,el){
+
+function toggleSym(k,el){
   el.classList.toggle('on');
-  el.querySelector('.sym-dot').style.background=el.classList.contains('on')?'var(--sky)':'var(--border-soft)';
-  S.syms[key]=el.classList.contains('on');
+  el.querySelector('.sym-dot').style.background=el.classList.contains('on')?'var(--sky)':'var(--bdr2)';
+  S.syms[k]=el.classList.contains('on');
   if(navigator.vibrate)navigator.vibrate(10);
 }
-function pickSite(el,name){
-  document.querySelectorAll('.site-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');S.site=name;
-  if(navigator.vibrate)navigator.vibrate(12);
-}
+
+// Site buttons - add to scan page
+function pickSite(el,n){document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');S.site=n;}
+
+// ── CALC GRADE ──
 function calcGrade(){
-  var s=S.syms,hrs=parseInt(document.getElementById('iv-sl').value),g=0;
-  if(s.pain)g++;
-  if(s.red||s.swell||s.warm)g++;
-  if(s.streak)g++;
-  if(s.cord)g++;
-  if(s.pus||s.fever)g++;
-  if(g>4)g=4;
-  if(hrs>96&&g<1)g=1;
-  return g;
+  var s=S.syms, h=parseInt(document.getElementById('ivsl').value), g=0;
+  if(S.type==='phl'){
+    if(s.pain)g++; if(s.red||s.swell||s.warm)g++; if(s.streak)g++; if(s.cord)g++; if(s.pus||s.fever)g++;
+    if(h>96&&g<1)g=1;
+  } else if(S.type==='inf'){
+    var swellSize=s.blister?4:s.pit?3:s.clear?3:s.swell?2:s.cool?1:0;
+    g=Math.min(swellSize,4); if(s.pain&&g<1)g=1;
+  } else {
+    var ext=s.necrosis?4:s.blister?4:s.streak?3:s.refill?2:s.red?2:s.swell?1:s.pain?1:0;
+    g=Math.min(ext,4);
+  }
+  return Math.min(g,4);
 }
+
+// ── ANALYZE ──
 function analyze(){
-  var g=calcGrade();S.grade=g;
-  var gd=GRADES[g];
+  var g=calcGrade(); S.grade=g;
+  var grades=getGrades(S.type);
+  var gd=grades[g];
   for(var i=0;i<=4;i++){var seg=document.getElementById('gs'+i);seg.classList.toggle('dim',i>g);seg.classList.toggle('act',i===g);}
-  var vr=document.getElementById('vip-r');vr.style.background=gd.bg;
-  var vc=document.getElementById('vip-c');vc.textContent=g;vc.style.background=gd.cc;vc.style.color='#fff';
-  document.getElementById('vip-t').textContent=gd.label;document.getElementById('vip-t').style.color=gd.tc;
-  document.getElementById('vip-s').textContent=gd.desc;document.getElementById('vip-s').style.color=gd.tc;
-  document.getElementById('plan-list').innerHTML=getNursing(g).map(p=>'<div class="plan-item"><div class="plan-ic">'+p.ic+'</div><div class="plan-text">'+p.tx+'</div></div>').join('');
-  document.getElementById('rec-box').innerHTML=getRec(g,parseInt(document.getElementById('iv-sl').value));
-  document.getElementById('res-sec').style.display='block';
-  setTimeout(()=>document.getElementById('res-sec').scrollIntoView({behavior:'smooth',block:'start'}),80);
+  var vr=document.getElementById('vres'); vr.style.background=gd.bg;
+  var vc=document.getElementById('vc'); vc.textContent=g; vc.style.background=gd.cc; vc.style.color=(g>=3?'#fff':'#1E293B');
+  document.getElementById('vt').textContent=gd.l; document.getElementById('vt').style.color=gd.tc;
+  document.getElementById('vs').textContent=gd.d; document.getElementById('vs').style.color=gd.tc;
+  // Scale name in result
+  document.getElementById('res-scale-title').textContent='ผล '+{phl:'Phlebitis Scale',inf:'Infiltration Scale',ext:'Extravasation Scale'}[S.type];
+  // Reference comparison
+  var refGrade=REF[S.type].grades[g];
+  document.getElementById('ref-content').innerHTML=
+    '<div style="background:'+refGrade.color+';border-radius:10px;padding:10px 12px;margin-bottom:6px">'
+    +'<div style="font-size:11px;font-weight:600;color:'+refGrade.tc+';margin-bottom:3px">Grade '+g+' — '+REF[S.type].name+'</div>'
+    +'<div style="font-size:12px;color:'+refGrade.tc+';margin-bottom:4px;line-height:1.5"><strong>อาการ:</strong> '+refGrade.syms+'</div>'
+    +'<div style="font-size:12px;color:'+refGrade.tc+';line-height:1.5"><strong>การพยาบาล:</strong> '+refGrade.care+'</div>'
+    +'<div style="font-size:10px;color:'+refGrade.tc+';margin-top:4px;opacity:.7">📚 ที่มา: '+REF[S.type].src+'</div>'
+    +'</div>';
+  document.getElementById('ref-compare').style.display='block';
+  document.getElementById('recbox').innerHTML=getRec(g,parseInt(document.getElementById('ivsl').value),S.type);
+  document.getElementById('ressec').style.display='block';
+  setTimeout(()=>document.getElementById('ressec').scrollIntoView({behavior:'smooth',block:'start'}),80);
   if(navigator.vibrate)navigator.vibrate([25,15,25]);
 }
-function getNursing(g){
-  var all={
-    0:[{ic:'✓',tx:'IV site ปกติ ดูแลต่อเนื่อง ไม่จำเป็นต้องเปลี่ยน'},{ic:'🕐',tx:'ประเมิน VIP ทุก 8–12 ชม. บันทึกเวชระเบียน'},{ic:'🩹',tx:'รักษา dressing ให้สะอาดแห้ง'}],
-    1:[{ic:'👀',tx:'ติดตามอาการทุก 4 ชม.'},{ic:'💧',tx:'พิจารณาลดอัตราสารน้ำ'},{ic:'🔄',tx:'เตรียมเปลี่ยนตำแหน่งหากแย่ลง'},{ic:'📋',tx:'บันทึกรายงานตามระบบ'}],
-    2:[{ic:'❌',tx:'ถอด IV catheter ทันที เปลี่ยนตำแหน่งใหม่'},{ic:'🧊',tx:'Cold compress 15–20 นาที ทุก 2–4 ชม.'},{ic:'☀️',tx:'Warm compress หลัง 24–48 ชม.'},{ic:'⬆️',tx:'ยกแขนสูงกว่าหัวใจ'},{ic:'💊',tx:'พิจารณา Topical NSAID gel'},{ic:'📏',tx:'วัดรอยแดง ถ่ายภาพทุกเวร'}],
-    3:[{ic:'🚨',tx:'ถอด IV ทันที รายงานแพทย์โดยด่วน'},{ic:'📏',tx:'วัดบันทึกรอยแดง/รอยเส้นทุกเวร'},{ic:'📸',tx:'ถ่ายภาพบันทึกเวชระเบียน'},{ic:'🧊',tx:'Cold/Warm compress + Elevation'},{ic:'💉',tx:'พิจารณา Anticoagulant therapy'},{ic:'🔬',tx:'Systemic antibiotics หากติดเชื้อ'}],
-    4:[{ic:'🆘',tx:'รายงานแพทย์ด่วนที่สุด ถอด IV ทันที'},{ic:'💓',tx:'ประเมิน Sepsis: Vital signs ทุก 15–30 นาที'},{ic:'🧪',tx:'เก็บ CBC, Blood culture ×2, CRP, PCT'},{ic:'💊',tx:'Broad-spectrum antibiotics + Anticoagulant'},{ic:'🩹',tx:'ทำแผล Sterile dressing'},{ic:'📝',tx:'บันทึก Incident report ตามระบบ'}]
-  };
-  return all[g]||all[0];
-}
-function getRec(g,h){
+
+function getRec(g,h,t){
   var html='';
-  if(h>72)html+='<div class="info ia">⏰ สาย IV คาไว้ '+h+' ชม. ควรพิจารณาเปลี่ยน (72–96 ชม.)</div>';
-  if(g===0)html+='<div class="info ig">IV site ดี ดูแลต่อเนื่อง ประเมินตามกำหนด</div>';
-  if(g>=2)html+='<div class="info ib">📍 บันทึกตำแหน่งที่เกิด Phlebitis เพื่อหลีกเลี่ยงครั้งต่อไป</div>';
-  if(g>=3)html+='<div class="info ir">พิจารณา PICC line หรือ Central line หากต้องให้ยาต่อเนื่อง</div>';
-  if(g===4)html+='<div class="info ir">ประเมิน Sepsis criteria (SIRS/qSOFA) ทันที</div>';
-  return html||'<div class="info ib">ดูแล dressing ให้สะอาดแห้ง รักษาความสะอาด IV site</div>';
+  if(h>72)html+='<div class="info ia">⏰ สาย IV คาไว้ '+h+' ชม. ควรพิจารณาเปลี่ยน</div>';
+  if(g===0)html+='<div class="info ig">'+{phl:'IV site ปกติ',inf:'ไม่มีการซึม',ext:'ไม่มีการรั่วซึม'}[t]+' ดูแลต่อเนื่อง</div>';
+  if(t==='phl'){
+    if(g>=2)html+='<div class="info ib2">📍 เปลี่ยนตำแหน่ง IV ทันที</div>';
+    if(g>=3)html+='<div class="info ir">พิจารณา PICC/Central line หากต้องให้ยาต่อเนื่อง</div>';
+    if(g===4)html+='<div class="info ir">ประเมิน Sepsis criteria ทันที</div>';
+  } else if(t==='inf'){
+    if(g>=1)html+='<div class="info ia">⚠ หยุดสารน้ำ/ยาทันที ถอดสายสวน</div>';
+    if(g>=3)html+='<div class="info ir">ระวัง Compartment Syndrome รายงานแพทย์ด่วน</div>';
+    if(g>=4)html+='<div class="info ir">รายงานแพทย์โดยด่วนที่สุด</div>';
+  } else {
+    if(g>=1)html+='<div class="info ia">⚠ หยุดยาทันที ดูดสารน้ำ/ยาออก ถอดสายสวน</div>';
+    if(g>=2)html+='<div class="info ir">รายงานแพทย์ พิจารณา Antidote</div>';
+    if(g===4)html+='<div class="info ir">ห้าม Dry warm/cold compress ทำแผล Wet dressing ด้วย NSS</div>';
+  }
+  return html||'<div class="info ib2">ดูแล dressing ให้สะอาดแห้ง</div>';
 }
+
+// ── SAVE (FIX: proper base64 image handling) ──
 async function saveRecord(){
-  if(S.grade<0){toast('วิเคราะห์ VIP score ก่อนบันทึก','amber');return;}
-  var btn=document.getElementById('save-btn'),txt=document.getElementById('save-txt');
-  btn.disabled=true;txt.innerHTML='<span class="spinner"></span> กำลังบันทึก...';
-  var symArr=Object.entries(S.syms).filter(([,v])=>v).map(([k])=>({pain:'ปวด',red:'แดง',swell:'บวม',warm:'ร้อน',streak:'รอยเส้น',cord:'ก้อน',pus:'หนอง',fever:'ไข้'}[k]||k));
+  if(S.grade<0){toast('วิเคราะห์ก่อนบันทึก','amber');return;}
+  var btn=document.getElementById('savebtn'),txt=document.getElementById('savetxt');
+  btn.disabled=true; txt.innerHTML='<span class="spinner"></span> กำลังบันทึก...';
+  var sa=Object.entries(S.syms).filter(([,v])=>v).map(([k])=>k);
+  var typeNames={phl:'Phlebitis',inf:'Infiltration',ext:'Extravasation'};
   var now=new Date();
-  var payload={ts:now.toLocaleString('th-TH'),hn:document.getElementById('pt-hn').value||'-',name:document.getElementById('pt-name').value||'-',ward:document.getElementById('pt-ward').value||'-',bed:'',site:S.site||'ไม่ระบุ',vip:S.grade,grade:GRADES[S.grade].label,syms:symArr.join(', ')||'ไม่มี',hours:document.getElementById('iv-sl').value,drugs:document.getElementById('pt-drug').value||'-',nurse:document.getElementById('nurse-name').value||'-',notes:document.getElementById('pt-note').value||'',aiText:S.aiText};
-  var rec=Object.assign({},payload,{_id:'local_'+now.getTime(),_ts:now.getTime(),_rowIndex:null,_synced:false});
+  var gradeRef=REF[S.type].grades[S.grade];
+  var payload={
+    ts:now.toLocaleString('th-TH'),
+    type:typeNames[S.type],
+    hn:document.getElementById('pthn').value||'-',
+    name:document.getElementById('ptnm').value||'-',
+    ward:document.getElementById('ptwd').value||'-',
+    bed:'',
+    site:S.site||'ไม่ระบุ',
+    grade:S.grade,
+    gradeLbl:gradeRef?gradeRef.syms.substring(0,50):'',
+    syms:sa.join(', ')||'ไม่มี',
+    hours:document.getElementById('ivsl').value,
+    drugs:document.getElementById('ptdg').value||'-',
+    nurse:document.getElementById('nsnm').value||'-',
+    notes:document.getElementById('ptnote').value||'',
+    aiTxt:S.aiTxt,
+    npTxt:S.npTxt,
+    img:S.imgThumb||''
+  };
+  var rec=Object.assign({},payload,{_id:'local_'+now.getTime(),_ts:now.getTime(),_synced:false,_img:S.imgThumb||''});
   S.history.unshift(rec);
   if(S.history.length>500)S.history.pop();
-  localStorage.setItem('ph_v3',JSON.stringify(S.history));
+  localStorage.setItem('smp_v5',JSON.stringify(S.history));
   updateStats();
   if(S.gsUrl){
     try{
-      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      var resp=await fetch(S.gsUrl,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
       S.history[0]._synced=true;
-      localStorage.setItem('ph_v3',JSON.stringify(S.history));
-      toast('บันทึก Google Sheets + Local ✓','green');
-    }catch(e){toast('บันทึก Local แล้ว (Sheets error)','amber');}
-  }else{toast('บันทึก Local ✓ (ตั้งค่า Sheets ในเมนูแชร์)','green');}
+      localStorage.setItem('smp_v5',JSON.stringify(S.history));
+      toast('บันทึก + รูปภาพ → Sheets ✓','green');
+    }catch(e){toast('บันทึก Local ✓ (Sheets error: ตรวจสอบ URL)','amber');}
+  }else{toast('บันทึก Local ✓','green');}
   if(navigator.vibrate)navigator.vibrate([25,20,80]);
   btn.disabled=false;
-  txt.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> บันทึก Google Sheets';
+  txt.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> บันทึก + รูปภาพลง Sheets';
 }
+
+// ── STATS ──
 function updateStats(){
   var today=new Date().toLocaleDateString('th-TH');
-  var tRecs=S.history.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
-  document.getElementById('st-today').textContent=tRecs.length;
-  document.getElementById('st-high').textContent=tRecs.filter(r=>parseInt(r.vip)>=2).length;
-  document.getElementById('st-total').textContent=S.history.length;
-  document.getElementById('hist-count').textContent=S.history.length+' รายการ';
+  var cm=new Date().getMonth(),cy=new Date().getFullYear();
+  var tr=S.history.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
+  var mr=S.history.filter(r=>{var d=new Date(r._ts);return d.getMonth()===cm&&d.getFullYear()===cy;});
+  document.getElementById('st-d').textContent=tr.length;
+  document.getElementById('st-h').textContent=tr.filter(r=>parseInt(r.grade)>=2).length;
+  document.getElementById('st-m').textContent=mr.length;
+  document.getElementById('st-t').textContent=S.history.length;
+  document.getElementById('hcount').textContent=S.history.length+' รายการ';
 }
-function filterHist(f){
-  histFilter=f;
-  ['all','today','high','ok'].forEach(x=>{var b=document.getElementById('f-'+x);if(b)b.classList.toggle('on',x===f);});
-  renderHistory();
+
+// ── HISTORY ──
+function filt(f){
+  S.hFilter=f;
+  ['all','today','phl','inf','ext','high'].forEach(x=>{var b=document.getElementById('f-'+x);if(b)b.classList.toggle('on',x===f);});
+  renderHist();
 }
-function renderHistory(){
-  var el=document.getElementById('hist-list');
+function renderHist(){
+  var el=document.getElementById('hlist');
   var list=S.history;
   var today=new Date().toLocaleDateString('th-TH');
-  if(histFilter==='high')list=list.filter(r=>parseInt(r.vip)>=2);
-  else if(histFilter==='ok')list=list.filter(r=>parseInt(r.vip)<2);
-  else if(histFilter==='today')list=list.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
-  document.getElementById('hist-count').textContent=list.length+' รายการ';
-  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px 16px;color:var(--text3)"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin:0 auto 10px;display:block;opacity:.35"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p style="font-size:13px">ไม่พบข้อมูล</p></div>';return;}
+  var cm=new Date().getMonth(),cy=new Date().getFullYear();
+  if(S.hFilter==='high')list=list.filter(r=>parseInt(r.grade)>=2);
+  else if(S.hFilter==='today')list=list.filter(r=>new Date(r._ts).toLocaleDateString('th-TH')===today);
+  else if(S.hFilter==='phl')list=list.filter(r=>r.type==='Phlebitis');
+  else if(S.hFilter==='inf')list=list.filter(r=>r.type==='Infiltration');
+  else if(S.hFilter==='ext')list=list.filter(r=>r.type==='Extravasation');
+  document.getElementById('hcount').textContent=list.length+' รายการ';
+  if(!list.length){el.innerHTML='<div style="text-align:center;padding:50px 16px;color:var(--txt3)"><p style="font-size:13px">ไม่พบข้อมูล</p></div>';return;}
+  var tc={'Phlebitis':'tc-phl','Infiltration':'tc-inf','Extravasation':'tc-ext'};
   el.innerHTML=list.slice(0,80).map(r=>{
-    var g=parseInt(r.vip)||0,ri=S.history.indexOf(r);
-    return '<div class="hist-item" onclick="openEdit('+ri+')">'
+    var g=parseInt(r.grade)||0,ri=S.history.indexOf(r);
+    var imgHtml=r._img?'<img src="data:image/jpeg;base64,'+r._img+'" class="hist-img" alt="IV">':'';
+    return '<div class="hi" onclick="openEdit('+ri+')">'
+      +imgHtml
       +'<div class="hvip" style="background:'+GBG[g]+';color:'+GTC[g]+'">'+g+'</div>'
-      +'<div class="hinfo" style="flex:1;min-width:0"><h4>'+escH(r.name||'-')+' <span style="font-weight:400;color:var(--text3);font-size:11px">'+escH(r.hn||'')+'</span></h4>'
-      +'<p>'+escH(r.ward||'-')+' · '+escH(r.site||'-')+'</p>'
-      +'<div class="htime">'+escH(r.ts||'')+(r._synced?' · <span style="color:var(--green-dark)">✓ Sheets</span>':' · <span style="color:var(--amber-dark)">⏳ Local</span>')+'</div></div>'
-      +'<button class="hact-btn" style="background:var(--sky-light);color:var(--sky-dark)" onclick="event.stopPropagation();openEdit('+ri+')">'
-      +'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:600">'+esc(r.name||'-')+' <span style="font-weight:400;color:var(--txt3);font-size:11px">'+esc(r.hn||'')+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:5px;margin-top:2px"><span class="type-chip '+(tc[r.type]||'tc-phl')+'">'+esc(r.type||'')+'</span><span style="font-size:11px;color:var(--txt2)">'+esc(r.ward||'-')+'</span></div>'
+        +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'+esc(r.ts||'')+(r._synced?' · <span style="color:var(--green-m)">✓ Sheets</span>':' · <span style="color:var(--amber-m)">⏳ Local</span>')+'</div>'
+      +'</div>'
+      +'<button class="hact" onclick="event.stopPropagation();openEdit('+ri+')" title="แก้ไข"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
       +'</div>';
   }).join('');
 }
-function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function openEdit(idx){
-  S.editIdx=idx;var r=S.history[idx];
-  document.getElementById('e-hn').value=r.hn||'';
-  document.getElementById('e-name').value=r.name||'';
-  document.getElementById('e-ward').value=r.ward||'';
-  document.getElementById('e-bed').value=r.bed||'';
-  document.getElementById('e-site').value=r.site||'';
-  document.getElementById('e-vip').value=r.vip||'0';
-  document.getElementById('e-syms').value=r.syms||'';
-  document.getElementById('e-drugs').value=r.drugs||'';
-  document.getElementById('e-nurse').value=r.nurse||'';
-  document.getElementById('e-notes').value=r.notes||'';
-  document.getElementById('edit-modal').classList.add('open');
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── EDIT ──
+function openEdit(i){
+  S.editIdx=i; var r=S.history[i];
+  document.getElementById('e-hn').value=r.hn||''; document.getElementById('e-nm').value=r.name||'';
+  document.getElementById('e-wd').value=r.ward||''; document.getElementById('e-site').value=r.site||'';
+  document.getElementById('e-type').value=r.type||'Phlebitis'; document.getElementById('e-grade').value=r.grade||'0';
+  document.getElementById('e-syms').value=r.syms||''; document.getElementById('e-drugs').value=r.drugs||'';
+  document.getElementById('e-nurse').value=r.nurse||''; document.getElementById('e-notes').value=r.notes||'';
+  document.getElementById('emod').classList.add('on');
   if(navigator.vibrate)navigator.vibrate(15);
 }
-function closeModal(){document.getElementById('edit-modal').classList.remove('open');S.editIdx=-1;}
+function closeMod(){document.getElementById('emod').classList.remove('on');S.editIdx=-1;}
 async function confirmEdit(){
   if(S.editIdx<0)return;
   var r=S.history[S.editIdx];
-  r.hn=document.getElementById('e-hn').value;
-  r.name=document.getElementById('e-name').value;
-  r.ward=document.getElementById('e-ward').value;
-  r.bed=document.getElementById('e-bed').value;
-  r.site=document.getElementById('e-site').value;
-  r.vip=parseInt(document.getElementById('e-vip').value);
-  r.grade=GRADES[r.vip]?.label||'';
-  r.syms=document.getElementById('e-syms').value;
-  r.drugs=document.getElementById('e-drugs').value;
-  r.nurse=document.getElementById('e-nurse').value;
-  r.notes=document.getElementById('e-notes').value;
-  r._edited=true;r._synced=false;
-  localStorage.setItem('ph_v3',JSON.stringify(S.history));
-  closeModal();updateStats();renderHistory();
-  if(S.gsUrl&&r._rowIndex){
-    try{
-      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},r,{_action:'update'}))});
-      r._synced=true;localStorage.setItem('ph_v3',JSON.stringify(S.history));
-      toast('แก้ไขและบันทึก Sheets แล้ว ✓','green');
-    }catch(e){toast('แก้ไข Local แล้ว (Sheets error)','amber');}
-  }else{toast('แก้ไขเรียบร้อย ✓','green');}
-  renderHistory();
+  r.hn=document.getElementById('e-hn').value; r.name=document.getElementById('e-nm').value;
+  r.ward=document.getElementById('e-wd').value; r.site=document.getElementById('e-site').value;
+  r.type=document.getElementById('e-type').value; r.grade=parseInt(document.getElementById('e-grade').value);
+  r.syms=document.getElementById('e-syms').value; r.drugs=document.getElementById('e-drugs').value;
+  r.nurse=document.getElementById('e-nurse').value; r.notes=document.getElementById('e-notes').value;
+  r._synced=false;
+  localStorage.setItem('smp_v5',JSON.stringify(S.history));
+  closeMod(); updateStats(); renderHist();
+  if(S.gsUrl&&r._ri){
+    try{await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},r,{_action:'update',_ri:r._ri}))});r._synced=true;localStorage.setItem('smp_v5',JSON.stringify(S.history));toast('แก้ไข Sheets ✓','green');}
+    catch(e){toast('แก้ไข Local แล้ว','amber');}
+  }else{toast('แก้ไขแล้ว ✓','green');}
+  renderHist();
 }
-async function confirmDelete(){
+async function confirmDel(){
   if(S.editIdx<0)return;
   var r=S.history[S.editIdx];
-  if(!confirm('ลบรายการนี้?\n'+r.name+' ('+r.hn+')\nVIP: '+r.vip+'\n\nไม่สามารถกู้คืนได้'))return;
-  var ri=S.editIdx;
-  S.history.splice(ri,1);
-  localStorage.setItem('ph_v3',JSON.stringify(S.history));
-  closeModal();updateStats();renderHistory();
-  if(S.gsUrl&&r._rowIndex){
-    try{await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({_action:'delete',_rowIndex:r._rowIndex})});toast('ลบออกจาก Sheets แล้ว','green');}
-    catch(e){toast('ลบ Local แล้ว (Sheets error)','amber');}
-  }else{toast('ลบเรียบร้อย','green');}
+  if(!confirm('ลบ '+r.name+' Grade:'+r.grade+'?'))return;
+  S.history.splice(S.editIdx,1); localStorage.setItem('smp_v5',JSON.stringify(S.history));
+  closeMod(); updateStats(); renderHist();
+  toast('ลบแล้ว','green');
 }
-async function syncFromSheets(){
-  if(!S.gsUrl){toast('ตั้งค่า Google Sheets URL ก่อน','amber');return;}
-  toast('กำลังดึงข้อมูลจาก Sheets...','blue');
+document.getElementById('emod').addEventListener('click',function(e){if(e.target===this)closeMod();});
+
+// ── SYNC ──
+async function syncSheets(){
+  if(!S.gsUrl){toast('ตั้งค่า Sheets URL ก่อน','amber');return;}
+  toast('กำลังดึงข้อมูล...','blue');
   try{
     var res=await fetch(S.gsUrl+'?t='+Date.now());
     var data=await res.json();
     if(data.ok&&data.rows&&data.rows.length>1){
       var rows=data.rows.slice(1);
-      var imported=rows.map((r,i)=>({_id:r[0]||'sh_'+i,_ts:new Date(r[1]).getTime()||Date.now(),_rowIndex:i+1,_synced:true,ts:r[1]||'',hn:r[2]||'',name:r[3]||'',ward:r[4]||'',bed:r[5]||'',site:r[6]||'',vip:parseInt(r[7])||0,grade:r[8]||'',syms:r[9]||'',hours:r[10]||'',drugs:r[11]||'',nurse:r[12]||'',notes:r[13]||'',aiText:r[14]||''}));
-      imported.forEach(ir=>{var loc=S.history.findIndex(r=>r._id===ir._id);if(loc>=0)S.history[loc]=ir;else S.history.push(ir);});
+      var imp=rows.map((r,i)=>({
+        _id:r[0]||'sh_'+i,_ts:new Date(r[1]).getTime()||Date.now(),_ri:i+1,_synced:true,
+        ts:r[1]||'',type:r[2]||'Phlebitis',hn:r[3]||'',name:r[4]||'',ward:r[5]||'',bed:r[6]||'',
+        site:r[7]||'',grade:parseInt(r[8])||0,gradeLbl:r[9]||'',syms:r[10]||'',hours:r[11]||'',
+        drugs:r[12]||'',nurse:r[13]||'',notes:r[14]||'',aiTxt:r[15]||'',npTxt:r[16]||'',_img:''
+      }));
+      imp.forEach(ir=>{var loc=S.history.findIndex(r=>r._id===ir._id);if(loc>=0)S.history[loc]=ir;else S.history.push(ir);});
       S.history.sort((a,b)=>b._ts-a._ts);
-      localStorage.setItem('ph_v3',JSON.stringify(S.history));
-      updateStats();renderHistory();
-      toast('ดึงข้อมูล '+imported.length+' รายการจาก Sheets ✓','green');
+      localStorage.setItem('smp_v5',JSON.stringify(S.history));
+      updateStats(); renderHist();
+      toast('ดึง '+imp.length+' รายการ ✓','green');
     }else{toast('ไม่พบข้อมูลใน Sheets','amber');}
-  }catch(e){toast('ดึงข้อมูลไม่ได้ ตรวจสอบ URL','amber');}
+  }catch(e){toast('ดึงไม่ได้ ตรวจสอบ URL','amber');}
 }
+
 function exportCSV(){
   if(!S.history.length){toast('ไม่มีข้อมูล','amber');return;}
-  var h=['Timestamp','HN','ชื่อ','Ward','Site','VIP','Grade','อาการ','ชม.','ยา','พยาบาล','หมายเหตุ'];
-  var rows=S.history.map(r=>[r.ts,r.hn,r.name,r.ward,r.site,r.vip,r.grade,r.syms,r.hours,r.drugs,r.nurse,r.notes].map(v=>'"'+(v||'')+'"').join(','));
+  var h=['Timestamp','ประเภท','HN','ชื่อ','Ward','Site','Grade','อาการ','ชม.','ยา','พยาบาล'];
+  var rows=S.history.map(function(r){
+    return [r.ts,r.type,r.hn,r.name,r.ward,r.site,r.grade,r.syms,r.hours,r.drugs,r.nurse]
+      .map(function(v){return '"'+(v||'')+'"';}).join(',');
+  });
+  var csv='\uFEFF'+h.join(',')+String.fromCharCode(10)+rows.join(String.fromCharCode(10));
   var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+h.join(',')+'\n'+rows.join('\n')],{type:'text/csv;charset=utf-8'}));
-  a.download='phlebitis_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.csv';
-  a.click();toast('Export CSV สำเร็จ ✓','green');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='SMARTP_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.csv';
+  a.click(); toast('Export CSV ✓','green');
 }
-function saveGsUrl(){S.gsUrl=document.getElementById('gs-url').value.trim();localStorage.setItem('ph_gs3',S.gsUrl);updateSheetsBadge();toast('บันทึก URL แล้ว ✓','green');}
-async function testConn(){
-  var url=document.getElementById('gs-url').value.trim();
-  if(!url){toast('กรอก URL ก่อน','amber');return;}
+// ── DASHBOARD ──
+function loadDash(){
+  var fy=parseInt(document.getElementById('fy-sel').value)||2568;
+  var ws=document.getElementById('ward-sel');
+  var wardSel=ws.value;
+  var fyStart=new Date(fy-1,9,1),fyEnd=new Date(fy,8,30);
+  var data=S.history.filter(r=>{var d=new Date(r._ts);return d>=fyStart&&d<=fyEnd&&(wardSel==='all'||r.ward===wardSel);});
+  // Ward selector
+  var wards=[...new Set(S.history.map(r=>r.ward).filter(Boolean))];
+  var cur=ws.value;
+  ws.innerHTML='<option value="all">ทุก Ward</option>'+wards.map(w=>'<option value="'+w+'"'+(w===cur?' selected':'')+'>'+w+'</option>').join('');
+  var phl=data.filter(r=>r.type==='Phlebitis').length;
+  var inf=data.filter(r=>r.type==='Infiltration').length;
+  var ext=data.filter(r=>r.type==='Extravasation').length;
+  var total=data.length,high=data.filter(r=>parseInt(r.grade)>=2).length;
+  var rate=total>0?((high/total)*100).toFixed(1):0;
+  document.getElementById('d-phl').textContent=phl;
+  document.getElementById('d-inf').textContent=inf;
+  document.getElementById('d-ext').textContent=ext;
+  document.getElementById('d-total').textContent=total;
+  document.getElementById('d-high').textContent=high;
+  document.getElementById('d-rate').textContent=rate+'%';
+  // Monthly arrays (Oct=0 ... Sep=11)
+  var mPhl=new Array(12).fill(0),mInf=new Array(12).fill(0),mExt=new Array(12).fill(0),mHigh=new Array(12).fill(0);
+  data.forEach(r=>{
+    var m=new Date(r._ts).getMonth();
+    var idx=m>=9?m-9:m+3;
+    if(idx<0||idx>11)return;
+    if(r.type==='Phlebitis')mPhl[idx]++;
+    else if(r.type==='Infiltration')mInf[idx]++;
+    else if(r.type==='Extravasation')mExt[idx]++;
+    if(parseInt(r.grade)>=2)mHigh[idx]++;
+  });
+  Object.values(S.charts).forEach(c=>{try{c.destroy();}catch(e){}});S.charts={};
+  // Monthly bar chart
+  S.charts.month=new Chart(document.getElementById('monthChart'),{type:'bar',data:{labels:MONTHS,datasets:[
+    {label:'Phlebitis',data:mPhl,backgroundColor:'rgba(37,99,235,.6)',borderRadius:3},
+    {label:'Infiltration',data:mInf,backgroundColor:'rgba(124,58,237,.6)',borderRadius:3},
+    {label:'Extravasation',data:mExt,backgroundColor:'rgba(180,83,9,.6)',borderRadius:3},
+    {label:'Grade≥2',data:mHigh,type:'line',borderColor:'rgba(251,113,133,.9)',backgroundColor:'transparent',borderWidth:2,pointRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+  // Type chart (doughnut)
+  S.charts.type=new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:['Phlebitis','Infiltration','Extravasation'],datasets:[{data:[phl,inf,ext],backgroundColor:['rgba(37,99,235,.7)','rgba(124,58,237,.7)','rgba(180,83,9,.7)'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}}}});
+  // Grade distribution
+  var gc=[0,1,2,3,4].map(g=>data.filter(r=>parseInt(r.grade)===g).length);
+  S.charts.grade=new Chart(document.getElementById('gradeChart'),{type:'bar',data:{labels:['G0','G1','G2','G3','G4'],datasets:[{data:gc,backgroundColor:['#BBF7D0','#FDE68A','#FCA5A5','#F87171','#DC2626'],borderWidth:0,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+  // Trend line chart
+  S.charts.trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:MONTHS,datasets:[
+    {label:'Phlebitis',data:mPhl,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.4,pointRadius:3},
+    {label:'Infiltration',data:mInf,borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,.1)',fill:true,tension:.4,pointRadius:3},
+    {label:'Extravasation',data:mExt,borderColor:'#B45309',backgroundColor:'rgba(180,83,9,.1)',fill:true,tension:.4,pointRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+  // Site rate
+  var sites={};
+  data.forEach(r=>{var s=r.site||'-';sites[s]=(sites[s]||0)+1;});
+  var siteRate=Object.entries(sites).map(([s,tot])=>{var ph=data.filter(r=>r.site===s&&parseInt(r.grade)>=2).length;return{site:s,tot,ph,rate:tot>0?((ph/tot)*100).toFixed(1):0};}).sort((a,b)=>b.ph-a.ph);
+  document.getElementById('site-rate-list').innerHTML=siteRate.slice(0,6).map(s=>'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1;font-size:12px">'+s.site+'</div><div style="font-size:11px;color:var(--txt3)">'+s.ph+'/'+s.tot+'</div><div style="width:60px;height:6px;background:var(--bdr2);border-radius:99px;overflow:hidden"><div style="height:100%;background:'+(parseFloat(s.rate)>=5?'var(--rose-m)':'var(--green-m)')+';width:'+Math.min(parseFloat(s.rate)*10,100)+'%;border-radius:99px"></div></div><div style="font-size:12px;font-weight:600;color:'+(parseFloat(s.rate)>=5?'var(--rose)':'var(--green)')+'">'+s.rate+'%</div></div>').join('')||'<p style="font-size:13px;color:var(--txt3)">ยังไม่มีข้อมูล</p>';
+}
+
+// ── SCALE REFERENCE ──
+function showRefTab(t){
+  ['phl','inf','ext'].forEach(x=>{document.getElementById('rt-'+x).classList.toggle('on',x===t);});
+  var ref=REF[t];
+  var html='<div style="font-size:12px;color:var(--txt2);margin-bottom:12px">📚 ที่มา: '+ref.src+'</div>';
+  ref.grades.forEach(g=>{
+    html+='<div style="border-left:4px solid '+g.color+';background:'+(g.color==='#BBF7D0'?'#F0FDF4':g.color==='#FDE68A'?'#FFFBEB':g.color==='#FCA5A5'?'#FFF7ED':g.color==='#F87171'?'#FFF1F2':'#FEF2F2')+';border-radius:0 '+12+'px '+12+'px 0;padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<div style="width:28px;height:28px;border-radius:9px;background:'+g.color+';color:'+g.tc+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+g.g+'</div>'
+        +'<div style="font-size:13px;font-weight:600;color:var(--txt)">Grade '+g.g+'</div>'
+      +'</div>'
+      +'<div style="font-size:12px;color:var(--txt2);margin-bottom:5px;line-height:1.6"><strong>อาการ:</strong> '+g.syms+'</div>'
+      +'<div style="font-size:12px;color:var(--txt);line-height:1.6;background:rgba(255,255,255,.6);border-radius:8px;padding:6px 8px"><strong>การพยาบาล:</strong> '+g.care+'</div>'
+      +'</div>';
+  });
+  document.getElementById('ref-tab-content').innerHTML=html;
+}
+
+// ── SHEETS SETUP ──
+function saveGs(){S.gsUrl=document.getElementById('gsurl').value.trim();localStorage.setItem('smp_gs5',S.gsUrl);updateDot();toast('บันทึก URL ✓','green');}
+async function testGs(){
+  var url=document.getElementById('gsurl').value.trim();if(!url){toast('กรอก URL ก่อน','amber');return;}
   toast('กำลังทดสอบ...','blue');
-  try{var res=await fetch(url+'?t='+Date.now());var data=await res.json();
-    document.getElementById('gs-status').innerHTML='<div class="info ig" style="margin-bottom:0">✓ เชื่อมต่อสำเร็จ '+(data.rows?'('+data.rows.length+' rows)':'')+'</div>';
+  try{
+    var res=await fetch(url+'?t='+Date.now());var data=await res.json();
+    document.getElementById('gsstatus').innerHTML='<div class="info ig" style="margin-bottom:0">✓ เชื่อมต่อสำเร็จ '+(data.rows?'('+data.rows.length+' rows)':'')+'</div>';
     toast('เชื่อมต่อสำเร็จ ✓','green');
   }catch(e){
-    document.getElementById('gs-status').innerHTML='<div class="info ir" style="margin-bottom:0">เชื่อมต่อไม่ได้ — ตรวจสอบ URL และ Deploy settings</div>';
+    document.getElementById('gsstatus').innerHTML='<div class="info ir" style="margin-bottom:0">เชื่อมต่อไม่ได้ — ตรวจสอบ URL & Deploy</div>';
     toast('เชื่อมต่อไม่สำเร็จ','amber');
   }
 }
-function updateSheetsBadge(){var b=document.getElementById('sheets-dot');if(S.gsUrl){b.className='sheet-badge sheet-ok';b.textContent='● Sheets เชื่อมต่อแล้ว';}else{b.className='sheet-badge sheet-pend';b.textContent='● ยังไม่เชื่อมต่อ';}}
+function updateDot(){var b=document.getElementById('sdot');if(S.gsUrl){b.className='sheet-badge s-ok';b.textContent='● Sheets ✓';}else{b.className='sheet-badge s-no';b.textContent='● ยังไม่เชื่อมต่อ';}}
+
+// ── QR ──
 function initQR(){
-  var url=window.location.href;
-  document.getElementById('qr-url-txt').textContent=url;
-  var wrap=document.getElementById('qr-wrap');wrap.innerHTML='';
-  try{new QRCode(wrap,{text:url,width:210,height:210,colorDark:'#1E293B',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.H});}
-  catch(e){wrap.innerHTML='<p style="color:var(--text3);font-size:12px;padding:20px">คัดลอก URL ด้านล่าง</p>';}
+  var url=window.location.href;document.getElementById('qurl').textContent=url;
+  var w=document.getElementById('qw');w.innerHTML='';
+  try{new QRCode(w,{text:url,width:210,height:210,colorDark:'#1E293B',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.H});}
+  catch(e){w.innerHTML='<p style="padding:20px;color:var(--txt3);font-size:12px">คัดลอก URL ด้านล่าง</p>';}
 }
-function copyUrl(){navigator.clipboard.writeText(window.location.href).then(()=>toast('คัดลอก URL แล้ว ✓','green')).catch(()=>toast('กรุณาคัดลอก URL เอง','amber'));}
-function saveQR(){var c=document.querySelector('#qr-wrap canvas');if(!c){toast('ไม่พบ QR Code','amber');return;}var a=document.createElement('a');a.download='phlebitis-ai-qr.png';a.href=c.toDataURL('image/png');a.click();toast('บันทึก QR Code แล้ว ✓','green');}
-function copyCode(){navigator.clipboard.writeText(document.getElementById('gas-code').textContent).then(()=>toast('คัดลอก Script แล้ว ✓','green')).catch(()=>toast('เลือกข้อความและคัดลอกเอง','amber'));}
+function cpUrl(){navigator.clipboard.writeText(window.location.href).then(()=>toast('คัดลอก URL ✓','green')).catch(()=>toast('คัดลอก URL เองค่ะ','amber'));}
+function dlQR(){
+  var c=document.querySelector('#qw canvas');if(!c){toast('QR ยังโหลดไม่เสร็จ','amber');return;}
+  var out=document.createElement('canvas');out.width=320;out.height=390;
+  var ctx=out.getContext('2d');
+  var g=ctx.createLinearGradient(0,0,320,390);g.addColorStop(0,'#1D4ED8');g.addColorStop(1,'#0F766E');
+  ctx.fillStyle=g;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(0,0,320,390,22);else ctx.rect(0,0,320,390);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.fillText('SMART-P',160,42);
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='11px sans-serif';ctx.fillText('Phlebitis · Infiltration · Extravasation',160,60);
+  ctx.fillStyle='#fff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(50,76,220,220,14);else ctx.rect(50,76,220,220);ctx.fill();
+  ctx.drawImage(c,60,86,200,200);
+  ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='13px sans-serif';ctx.fillText('📱 สแกนเพื่อเปิดแอป',160,328);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='9px monospace';ctx.fillText(window.location.hostname,160,348);
+  var a=document.createElement('a');a.download='SMART-P-QR.png';a.href=out.toDataURL('image/png');a.click();
+  toast('บันทึก QR ✓','green');
+}
+function cpCode(){
+  navigator.clipboard.writeText(document.getElementById('gascode').textContent)
+    .then(()=>{var b=document.querySelector('.cbtn2');b.textContent='✓';setTimeout(()=>b.textContent='📋 คัดลอก',2000);})
+    .catch(()=>toast('เลือกข้อความและคัดลอกเอง','amber'));
+}
+
+// ── TOAST ──
 function toast(msg,type){
   var tw=document.getElementById('tw'),el=document.createElement('div');el.className='toast';
   var c={green:'#10B981',blue:'#4F9CF9',amber:'#F59E0B',red:'#F43F5E'};
-  var ico={green:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>',blue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',amber:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>',red:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'};
+  var ico={green:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M20 6L9 17l-5-5"/></svg>',blue:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',amber:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>',red:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'};
   el.innerHTML='<span style="color:'+(c[type]||c.blue)+';flex-shrink:0">'+(ico[type]||ico.blue)+'</span>'+msg;
-  tw.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(6px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300);},3200);
+  tw.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(6px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300);},3200);
 }
-document.getElementById('edit-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 </script>
 </body>
 </html>
-
-
-    
-    
-      
-  
