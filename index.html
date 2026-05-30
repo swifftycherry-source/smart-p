@@ -344,7 +344,14 @@ select.fi{cursor:pointer}
   <button class="ib" onclick="loadDash()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>
 </div>
 <div style="margin:12px 14px 0;display:flex;gap:8px">
-  <select class="fi" id="fy-sel" onchange="loadDash()" style="flex:1"><option value="2568">ปีงบ 2568</option><option value="2567">ปีงบ 2567</option><option value="2566">ปีงบ 2566</option></select>
+  <select class="fi" id="fy-sel" onchange="loadDash()" style="flex:1" id="fy-sel">
+      <option value="2569">ปีงบ 2569</option>
+      <option value="2568">ปีงบ 2568</option>
+      <option value="2567">ปีงบ 2567</option>
+      <option value="2566">ปีงบ 2566</option>
+      <option value="2565">ปีงบ 2565</option>
+      <option value="all">ทุกปี</option>
+    </select>
   <select class="fi" id="ward-sel" onchange="loadDash()" style="flex:1"><option value="all">ทุก Ward</option></select>
 </div>
 <!-- Type breakdown -->
@@ -628,6 +635,27 @@ window.addEventListener('load',()=>{
     initQR(); showRefTab('phl');
     document.getElementById('gsurl').value = S.gsUrl;
     updateDot(); updateSymGrid();
+    // Auto-select current Thai fiscal year
+    var now = new Date();
+    var thYear = now.getFullYear() + 543;
+    // If month is Oct-Dec, fiscal year = current Thai year + 1
+    var currentFY = (now.getMonth() >= 9) ? thYear + 1 : thYear;
+    var fySel = document.getElementById('fy-sel');
+    if(fySel) {
+      // Check if option exists, if not add it
+      var found = false;
+      for(var i=0;i<fySel.options.length;i++){
+        if(parseInt(fySel.options[i].value)===currentFY){
+          fySel.selectedIndex=i; found=true; break;
+        }
+      }
+      if(!found){
+        var opt = document.createElement('option');
+        opt.value = currentFY; opt.text = 'ปีงบ '+currentFY;
+        fySel.insertBefore(opt, fySel.firstChild);
+        fySel.selectedIndex = 0;
+      }
+    }
   },2200);
 });
 function updateClock(){document.getElementById('clk').textContent=new Date().toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
@@ -996,8 +1024,21 @@ function loadDash(){
   var fy=parseInt(document.getElementById('fy-sel').value)||2568;
   var ws=document.getElementById('ward-sel');
   var wardSel=ws.value;
-  var fyStart=new Date(fy-1,9,1),fyEnd=new Date(fy,8,30);
-  var data=S.history.filter(r=>{var d=new Date(r._ts);return d>=fyStart&&d<=fyEnd&&(wardSel==='all'||r.ward===wardSel);});
+  // Thai fiscal year: ปีงบประมาณไทย (ต.ค. - ก.ย.)
+  // ปีไทย 2569 = ค.ศ. 2026 ดังนั้น FY2569 = ต.ค. 2025 - ก.ย. 2026
+  var data;
+  if(fy === 'all' || isNaN(parseInt(fy))) {
+    data = S.history.filter(function(r){ return wardSel==='all'||r.ward===wardSel; });
+  } else {
+    var fyInt = parseInt(fy);
+    var adYear = fyInt - 543;
+    var fyStart = new Date(adYear-1, 9, 1);
+    var fyEnd = new Date(adYear, 8, 30, 23, 59, 59);
+    data = S.history.filter(function(r){
+      var d = new Date(r._ts);
+      return d>=fyStart && d<=fyEnd && (wardSel==='all'||r.ward===wardSel);
+    });
+  }
   // Ward selector
   var wards=[...new Set(S.history.map(r=>r.ward).filter(Boolean))];
   var cur=ws.value;
