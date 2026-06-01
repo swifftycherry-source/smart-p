@@ -966,9 +966,16 @@ async function confirmEdit(){
   r._synced=false;
   localStorage.setItem('smp_v5',JSON.stringify(S.history));
   closeMod(); updateStats(); renderHist();
-  if(S.gsUrl&&r._ri){
-    try{await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},r,{_action:'update',_ri:r._ri}))});r._synced=true;localStorage.setItem('smp_v5',JSON.stringify(S.history));toast('แก้ไข Sheets ✓','green');}
-    catch(e){toast('แก้ไข Local แล้ว','amber');}
+  if(S.gsUrl){
+    try{
+      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(Object.assign({},r,{_action:'update',_id:r._id,_ri:r._ri}))
+      });
+      r._synced=true;
+      localStorage.setItem('smp_v5',JSON.stringify(S.history));
+      toast('แก้ไขและบันทึก Sheets ✓','green');
+    }catch(e){toast('แก้ไข Local แล้ว (Sheets error)','amber');}
   }else{toast('แก้ไขแล้ว ✓','green');}
   renderHist();
 }
@@ -976,32 +983,67 @@ async function confirmDel(){
   if(S.editIdx<0)return;
   var r=S.history[S.editIdx];
   if(!confirm('ลบ '+r.name+' Grade:'+r.grade+'?'))return;
-  S.history.splice(S.editIdx,1); localStorage.setItem('smp_v5',JSON.stringify(S.history));
+  var deletedId=r._id, deletedRi=r._ri;
+  S.history.splice(S.editIdx,1);
+  localStorage.setItem('smp_v5',JSON.stringify(S.history));
   closeMod(); updateStats(); renderHist();
-  toast('ลบแล้ว','green');
+  if(S.gsUrl&&deletedId){
+    try{
+      await fetch(S.gsUrl,{method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({_action:'delete',_id:deletedId,_ri:deletedRi})
+      });
+      toast('ลบออกจาก Sheets แล้ว ✓','green');
+    }catch(e){toast('ลบ Local แล้ว','amber');}
+  }else{toast('ลบแล้ว ✓','green');}
 }
 document.getElementById('emod').addEventListener('click',function(e){if(e.target===this)closeMod();});
 
 // ── SYNC ──
 async function syncSheets(){
   if(!S.gsUrl){toast('ตั้งค่า Sheets URL ก่อน','amber');return;}
-  toast('กำลังดึงข้อมูล...','blue');
+  toast('กำลังดึงข้อมูลจาก Sheets...','blue');
   try{
     var res=await fetch(S.gsUrl+'?t='+Date.now());
     var data=await res.json();
     if(data.ok&&data.rows&&data.rows.length>1){
       var rows=data.rows.slice(1);
-      var imp=rows.map((r,i)=>({
-        _id:r[0]||'sh_'+i,_ts:new Date(r[1]).getTime()||Date.now(),_ri:i+1,_synced:true,
-        ts:r[1]||'',type:r[2]||'Phlebitis',hn:r[3]||'',name:r[4]||'',ward:r[5]||'',bed:r[6]||'',
-        site:r[7]||'',grade:parseInt(r[8])||0,gradeLbl:r[9]||'',syms:r[10]||'',hours:r[11]||'',
-        drugs:r[12]||'',nurse:r[13]||'',notes:r[14]||'',aiTxt:r[15]||'',npTxt:r[16]||'',_img:''
-      }));
-      imp.forEach(ir=>{var loc=S.history.findIndex(r=>r._id===ir._id);if(loc>=0)S.history[loc]=ir;else S.history.push(ir);});
-      S.history.sort((a,b)=>b._ts-a._ts);
+      // Build fresh list from Sheets (Sheets is source of truth)
+      var sheetsRecs=rows.map(function(r,i){
+        var id=r[0]||('sh_'+i);
+        // Try to find existing local record to preserve _img
+        var existing=S.history.find(function(h){return h._id===id;});
+        return {
+          _id:id,
+          _ts:new Date(r[1]).getTime()||Date.now(),
+          _ri:i+1,  // row index in Sheets (1=header, so data starts at 2)
+          _synced:true,
+          _img: existing?existing._img||'':'',
+          ts:r[1]||'',
+          type:r[2]||'Phlebitis',
+          hn:r[3]||'',
+          name:r[4]||'',
+          ward:r[5]||'',
+          bed:r[6]||'',
+          site:r[7]||'',
+          grade:parseInt(r[8])||0,
+          gradeLbl:r[9]||'',
+          syms:r[10]||'',
+          hours:r[11]||'',
+          drugs:r[12]||'',
+          nurse:r[13]||'',
+          notes:r[14]||'',
+          aiTxt:r[15]||'',
+          npTxt:r[16]||''
+        };
+      });
+      // Replace history with Sheets data + local unsynced records
+      var unsynced=S.history.filter(function(r){return !r._synced;});
+      S.history=sheetsRecs.concat(unsynced);
+      S.history.sort(function(a,b){return b._ts-a._ts;});
       localStorage.setItem('smp_v5',JSON.stringify(S.history));
       updateStats(); renderHist();
-      toast('ดึง '+imp.length+' รายการ ✓','green');
+      toast('ซิงค์ '+sheetsRecs.length+' รายการจาก Sheets ✓','green');
     }else{toast('ไม่พบข้อมูลใน Sheets','amber');}
   }catch(e){toast('ดึงไม่ได้ ตรวจสอบ URL','amber');}
 }
