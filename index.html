@@ -935,7 +935,7 @@ function renderHist(){
       +'<div style="flex:1;min-width:0">'
         +'<div style="font-size:13px;font-weight:600">'+esc(r.name||'-')+' <span style="font-weight:400;color:var(--txt3);font-size:11px">'+esc(r.hn||'')+'</span></div>'
         +'<div style="display:flex;align-items:center;gap:5px;margin-top:2px"><span class="type-chip '+(tc[r.type]||'tc-phl')+'">'+esc(r.type||'')+'</span><span style="font-size:11px;color:var(--txt2)">'+esc(r.ward||'-')+'</span></div>'
-        +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'+esc(r.ts||'')+(r._synced?' · <span style="color:var(--green-m)">✓ Sheets</span>':' · <span style="color:var(--amber-m)">⏳ Local</span>')+'</div>'
+        +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'+formatTs(r.ts||r._ts||'')+(r._synced?' · <span style="color:var(--green-m)">✓ Sheets</span>':' · <span style="color:var(--amber-m)">⏳ Local</span>')+'</div>'
       +'</div>'
       +'<button class="hact" onclick="event.stopPropagation();openEdit('+ri+')" title="แก้ไข"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
       +'</div>';
@@ -1002,157 +1002,72 @@ document.getElementById('emod').addEventListener('click',function(e){if(e.target
 // ── SYNC ──
 async function syncSheets(){
   if(!S.gsUrl){toast('ตั้งค่า Sheets URL ก่อน','amber');return;}
-  toast('กำลังดึงข้อมูลจาก Sheets...','blue');
+  toast('กำลัง Sync จาก Sheets...','blue');
   try{
     var res=await fetch(S.gsUrl+'?t='+Date.now());
     var data=await res.json();
-    if(data.ok&&data.rows&&data.rows.length>1){
-      var rows=data.rows.slice(1);
-      // Build fresh list from Sheets (Sheets is source of truth)
-      var sheetsRecs=rows.map(function(r,i){
-        var id=r[0]||('sh_'+i);
-        // Try to find existing local record to preserve _img
-        var existing=S.history.find(function(h){return h._id===id;});
-        return {
-          _id:id,
-          _ts:new Date(r[1]).getTime()||Date.now(),
-          _ri:i+1,  // row index in Sheets (1=header, so data starts at 2)
-          _synced:true,
-          _img: existing?existing._img||'':'',
-          ts:r[1]||'',
-          type:r[2]||'Phlebitis',
-          hn:r[3]||'',
-          name:r[4]||'',
-          ward:r[5]||'',
-          bed:r[6]||'',
-          site:r[7]||'',
-          grade:parseInt(r[8])||0,
-          gradeLbl:r[9]||'',
-          syms:r[10]||'',
-          hours:r[11]||'',
-          drugs:r[12]||'',
-          nurse:r[13]||'',
-          notes:r[14]||'',
-          aiTxt:r[15]||'',
-          npTxt:r[16]||''
-        };
-      });
-      // Replace history with Sheets data + local unsynced records
-      var unsynced=S.history.filter(function(r){return !r._synced;});
-      S.history=sheetsRecs.concat(unsynced);
-      S.history.sort(function(a,b){return b._ts-a._ts;});
-      localStorage.setItem('smp_v5',JSON.stringify(S.history));
-      updateStats(); renderHist();
-      toast('ซิงค์ '+sheetsRecs.length+' รายการจาก Sheets ✓','green');
-    }else{toast('ไม่พบข้อมูลใน Sheets','amber');}
-  }catch(e){toast('ดึงไม่ได้ ตรวจสอบ URL','amber');}
-}
+    if(!data.ok||!data.rows||data.rows.length<=1){
+      toast('ไม่พบข้อมูลใน Sheets','amber');return;
+    }
+    var rows=data.rows.slice(1); // skip header row
 
-function exportCSV(){
-  if(!S.history.length){toast('ไม่มีข้อมูล','amber');return;}
-  var h=['Timestamp','ประเภท','HN','ชื่อ','Ward','Site','Grade','อาการ','ชม.','ยา','พยาบาล'];
-  var rows=S.history.map(function(r){
-    return [r.ts,r.type,r.hn,r.name,r.ward,r.site,r.grade,r.syms,r.hours,r.drugs,r.nurse]
-      .map(function(v){return '"'+(v||'')+'"';}).join(',');
-  });
-  var csv='\uFEFF'+h.join(',')+String.fromCharCode(10)+rows.join(String.fromCharCode(10));
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='SMARTP_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.csv';
-  a.click(); toast('Export CSV ✓','green');
-}
-// ── DASHBOARD ──
-function loadDash(){
-  var fy=parseInt(document.getElementById('fy-sel').value)||2568;
-  var ws=document.getElementById('ward-sel');
-  var wardSel=ws.value;
-  // Thai fiscal year: ปีงบประมาณไทย (ต.ค. - ก.ย.)
-  // ปีไทย 2569 = ค.ศ. 2026 ดังนั้น FY2569 = ต.ค. 2025 - ก.ย. 2026
-  var data;
-  if(fy === 'all' || isNaN(parseInt(fy))) {
-    data = S.history.filter(function(r){ return wardSel==='all'||r.ward===wardSel; });
-  } else {
-    var fyInt = parseInt(fy);
-    var adYear = fyInt - 543;
-    var fyStart = new Date(adYear-1, 9, 1);
-    var fyEnd = new Date(adYear, 8, 30, 23, 59, 59);
-    data = S.history.filter(function(r){
-      var d = new Date(r._ts);
-      return d>=fyStart && d<=fyEnd && (wardSel==='all'||r.ward===wardSel);
+    // Build local image map (ID -> base64 thumb)
+    var imgMap={};
+    S.history.forEach(function(r){if(r._id&&r._img)imgMap[r._id]=r._img;});
+
+    // Map Sheets rows to records
+    // Columns: A=ID, B=Timestamp, C=Type, D=HN, E=Name, F=Ward, G=Bed,
+    //          H=Site, I=Grade, J=GradeLbl, K=Syms, L=Hours, M=Drugs,
+    //          N=Nurse, O=Notes, P=aiTxt, Q=npTxt, R=Image
+    var sheetsRecs=rows.map(function(r,i){
+      var id=String(r[0]||'sh_'+i);
+      // Parse timestamp - try multiple formats
+      var tsStr=String(r[1]||'');
+      var tsTime=Date.now();
+      if(tsStr){
+        var parsed=new Date(tsStr).getTime();
+        if(!isNaN(parsed)) tsTime=parsed;
+      }
+      return {
+        _id:     id,
+        _ts:     tsTime,
+        _ri:     i+1,       // data row index (1=first data row, header is row 0)
+        _synced: true,
+        _img:    imgMap[id]||'',  // restore local thumbnail
+        ts:      tsStr,           // display as-is from Sheets
+        type:    String(r[2]||'Phlebitis'),
+        hn:      String(r[3]||'-'),
+        name:    String(r[4]||'-'),
+        ward:    String(r[5]||'-'),
+        bed:     String(r[6]||''),
+        site:    String(r[7]||'ไม่ระบุ'),
+        grade:   parseInt(r[8])||0,
+        gradeLbl:String(r[9]||''),
+        syms:    String(r[10]||''),
+        hours:   String(r[11]||''),
+        drugs:   String(r[12]||''),
+        nurse:   String(r[13]||''),
+        notes:   String(r[14]||''),
+        aiTxt:   String(r[15]||''),
+        npTxt:   String(r[16]||'')
+      };
     });
+
+    // Keep local unsynced records (not yet sent to Sheets)
+    var unsynced=S.history.filter(function(r){return !r._synced;});
+
+    // Replace history with Sheets data + unsynced local
+    S.history=sheetsRecs.concat(unsynced);
+    S.history.sort(function(a,b){return b._ts-a._ts;});
+    localStorage.setItem('smp_v5',JSON.stringify(S.history));
+    updateStats(); renderHist();
+    toast('Sync '+sheetsRecs.length+' รายการ ✓','green');
+  }catch(err){
+    toast('Sync ไม่ได้: '+err.message,'amber');
   }
-  // Ward selector
-  var wards=[...new Set(S.history.map(r=>r.ward).filter(Boolean))];
-  var cur=ws.value;
-  ws.innerHTML='<option value="all">ทุก Ward</option>'+wards.map(w=>'<option value="'+w+'"'+(w===cur?' selected':'')+'>'+w+'</option>').join('');
-  var phl=data.filter(r=>r.type==='Phlebitis').length;
-  var inf=data.filter(r=>r.type==='Infiltration').length;
-  var ext=data.filter(r=>r.type==='Extravasation').length;
-  var total=data.length,high=data.filter(r=>parseInt(r.grade)>=2).length;
-  var rate=total>0?((high/total)*100).toFixed(1):0;
-  document.getElementById('d-phl').textContent=phl;
-  document.getElementById('d-inf').textContent=inf;
-  document.getElementById('d-ext').textContent=ext;
-  document.getElementById('d-total').textContent=total;
-  document.getElementById('d-high').textContent=high;
-  document.getElementById('d-rate').textContent=rate+'%';
-  // Monthly arrays (Oct=0 ... Sep=11)
-  var mPhl=new Array(12).fill(0),mInf=new Array(12).fill(0),mExt=new Array(12).fill(0),mHigh=new Array(12).fill(0);
-  data.forEach(r=>{
-    var m=new Date(r._ts).getMonth();
-    var idx=m>=9?m-9:m+3;
-    if(idx<0||idx>11)return;
-    if(r.type==='Phlebitis')mPhl[idx]++;
-    else if(r.type==='Infiltration')mInf[idx]++;
-    else if(r.type==='Extravasation')mExt[idx]++;
-    if(parseInt(r.grade)>=2)mHigh[idx]++;
-  });
-  Object.values(S.charts).forEach(c=>{try{c.destroy();}catch(e){}});S.charts={};
-  // Monthly bar chart
-  S.charts.month=new Chart(document.getElementById('monthChart'),{type:'bar',data:{labels:MONTHS,datasets:[
-    {label:'Phlebitis',data:mPhl,backgroundColor:'rgba(37,99,235,.6)',borderRadius:3},
-    {label:'Infiltration',data:mInf,backgroundColor:'rgba(124,58,237,.6)',borderRadius:3},
-    {label:'Extravasation',data:mExt,backgroundColor:'rgba(180,83,9,.6)',borderRadius:3},
-    {label:'Grade≥2',data:mHigh,type:'line',borderColor:'rgba(251,113,133,.9)',backgroundColor:'transparent',borderWidth:2,pointRadius:3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
-  // Type chart (doughnut)
-  S.charts.type=new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:['Phlebitis','Infiltration','Extravasation'],datasets:[{data:[phl,inf,ext],backgroundColor:['rgba(37,99,235,.7)','rgba(124,58,237,.7)','rgba(180,83,9,.7)'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}}}});
-  // Grade distribution
-  var gc=[0,1,2,3,4].map(g=>data.filter(r=>parseInt(r.grade)===g).length);
-  S.charts.grade=new Chart(document.getElementById('gradeChart'),{type:'bar',data:{labels:['G0','G1','G2','G3','G4'],datasets:[{data:gc,backgroundColor:['#BBF7D0','#FDE68A','#FCA5A5','#F87171','#DC2626'],borderWidth:0,borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
-  // Trend line chart
-  S.charts.trend=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:MONTHS,datasets:[
-    {label:'Phlebitis',data:mPhl,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.4,pointRadius:3},
-    {label:'Infiltration',data:mInf,borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,.1)',fill:true,tension:.4,pointRadius:3},
-    {label:'Extravasation',data:mExt,borderColor:'#B45309',backgroundColor:'rgba(180,83,9,.1)',fill:true,tension:.4,pointRadius:3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
-  // Site rate
-  var sites={};
-  data.forEach(r=>{var s=r.site||'-';sites[s]=(sites[s]||0)+1;});
-  var siteRate=Object.entries(sites).map(([s,tot])=>{var ph=data.filter(r=>r.site===s&&parseInt(r.grade)>=2).length;return{site:s,tot,ph,rate:tot>0?((ph/tot)*100).toFixed(1):0};}).sort((a,b)=>b.ph-a.ph);
-  document.getElementById('site-rate-list').innerHTML=siteRate.slice(0,6).map(s=>'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1;font-size:12px">'+s.site+'</div><div style="font-size:11px;color:var(--txt3)">'+s.ph+'/'+s.tot+'</div><div style="width:60px;height:6px;background:var(--bdr2);border-radius:99px;overflow:hidden"><div style="height:100%;background:'+(parseFloat(s.rate)>=5?'var(--rose-m)':'var(--green-m)')+';width:'+Math.min(parseFloat(s.rate)*10,100)+'%;border-radius:99px"></div></div><div style="font-size:12px;font-weight:600;color:'+(parseFloat(s.rate)>=5?'var(--rose)':'var(--green)')+'">'+s.rate+'%</div></div>').join('')||'<p style="font-size:13px;color:var(--txt3)">ยังไม่มีข้อมูล</p>';
 }
 
-// ── SCALE REFERENCE ──
-function showRefTab(t){
-  ['phl','inf','ext'].forEach(x=>{document.getElementById('rt-'+x).classList.toggle('on',x===t);});
-  var ref=REF[t];
-  var html='<div style="font-size:12px;color:var(--txt2);margin-bottom:12px">📚 ที่มา: '+ref.src+'</div>';
-  ref.grades.forEach(g=>{
-    html+='<div style="border-left:4px solid '+g.color+';background:'+(g.color==='#BBF7D0'?'#F0FDF4':g.color==='#FDE68A'?'#FFFBEB':g.color==='#FCA5A5'?'#FFF7ED':g.color==='#F87171'?'#FFF1F2':'#FEF2F2')+';border-radius:0 '+12+'px '+12+'px 0;padding:10px 12px;margin-bottom:8px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<div style="width:28px;height:28px;border-radius:9px;background:'+g.color+';color:'+g.tc+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+g.g+'</div>'
-        +'<div style="font-size:13px;font-weight:600;color:var(--txt)">Grade '+g.g+'</div>'
-      +'</div>'
-      +'<div style="font-size:12px;color:var(--txt2);margin-bottom:5px;line-height:1.6"><strong>อาการ:</strong> '+g.syms+'</div>'
-      +'<div style="font-size:12px;color:var(--txt);line-height:1.6;background:rgba(255,255,255,.6);border-radius:8px;padding:6px 8px"><strong>การพยาบาล:</strong> '+g.care+'</div>'
-      +'</div>';
-  });
-  document.getElementById('ref-tab-content').innerHTML=html;
-}
 
-// ── SHEETS SETUP ──
-function saveGs(){S.gsUrl=document.getElementById('gsurl').value.trim();localStorage.setItem('smp_gs5',S.gsUrl);updateDot();toast('บันทึก URL ✓','green');}
 async function testGs(){
   var url=document.getElementById('gsurl').value.trim();if(!url){toast('กรอก URL ก่อน','amber');return;}
   toast('กำลังทดสอบ...','blue');
@@ -1196,6 +1111,30 @@ function cpCode(){
     .catch(()=>toast('เลือกข้อความและคัดลอกเอง','amber'));
 }
 
+// ── FORMAT TIMESTAMP ──
+function formatTs(ts){
+  if(!ts) return '-';
+  var s=String(ts);
+  // If ISO format (contains T and Z), convert to Thai display
+  if(s.indexOf('T')>0){
+    try{
+      var d=new Date(s);
+      if(!isNaN(d.getTime())){
+        return d.toLocaleString('th-TH',{
+          day:'2-digit',month:'2-digit',year:'2-digit',
+          hour:'2-digit',minute:'2-digit'
+        });
+      }
+    }catch(e){}
+  }
+  // If numeric timestamp
+  if(!isNaN(Number(s))&&Number(s)>1000000000000){
+    var d2=new Date(Number(s));
+    return d2.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }
+  return s; // already formatted
+}
+
 // ── TOAST ──
 function toast(msg,type){
   var tw=document.getElementById('tw'),el=document.createElement('div');el.className='toast';
@@ -1204,6 +1143,168 @@ function toast(msg,type){
   el.innerHTML='<span style="color:'+(c[type]||c.blue)+';flex-shrink:0">'+(ico[type]||ico.blue)+'</span>'+msg;
   tw.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(6px)';el.style.transition='.3s';setTimeout(()=>el.remove(),300);},3200);
 }
+
+// ── EXPORT CSV ──
+function exportCSV(){
+  if(!S.history.length){toast('ไม่มีข้อมูล','amber');return;}
+  var h=['Timestamp','ประเภท','HN','ชื่อ','Ward','Site','Grade','อาการ','ชม.','ยา','พยาบาล'];
+  var rows=S.history.map(function(r){
+    return [r.ts,r.type,r.hn,r.name,r.ward,r.site,r.grade,r.syms,r.hours,r.drugs,r.nurse]
+      .map(function(v){return '"'+(String(v||'').replace(/"/g,'""'))+'"';}).join(',');
+  });
+  var csv='\uFEFF'+h.join(',')+String.fromCharCode(10)+rows.join(String.fromCharCode(10));
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='SMARTP_'+new Date().toLocaleDateString('th-TH').replace(/\//g,'-')+'.csv';
+  a.click(); toast('Export CSV ✓','green');
+}
+
+// ── SHEETS SETUP ──
+function saveGs(){
+  S.gsUrl=document.getElementById('gsurl').value.trim();
+  localStorage.setItem('smp_gs5',S.gsUrl);
+  updateDot(); toast('บันทึก URL ✓','green');
+}
+
+// ── DASHBOARD ──
+function loadDash(){
+  var fyEl=document.getElementById('fy-sel');
+  var fy=fyEl?fyEl.value:'all';
+  var wsEl=document.getElementById('ward-sel');
+  var wardSel=wsEl?wsEl.value:'all';
+
+  var data;
+  if(fy==='all'||isNaN(parseInt(fy))){
+    data=S.history.filter(function(r){return wardSel==='all'||r.ward===wardSel;});
+  } else {
+    var fyInt=parseInt(fy);
+    var adYear=fyInt-543;
+    var fyStart=new Date(adYear-1,9,1);
+    var fyEnd=new Date(adYear,8,30,23,59,59);
+    data=S.history.filter(function(r){
+      var d=new Date(r._ts);
+      return d>=fyStart&&d<=fyEnd&&(wardSel==='all'||r.ward===wardSel);
+    });
+  }
+
+  // Update ward dropdown
+  var wards=[...new Set(S.history.map(function(r){return r.ward;}).filter(Boolean))];
+  if(wsEl){
+    var cur=wsEl.value;
+    wsEl.innerHTML='<option value="all">ทุก Ward</option>'+
+      wards.map(function(w){return '<option value="'+w+'"'+(w===cur?' selected':'')+'>'+w+'</option>';}).join('');
+  }
+
+  var phl=data.filter(function(r){return r.type==='Phlebitis';}).length;
+  var inf=data.filter(function(r){return r.type==='Infiltration';}).length;
+  var ext=data.filter(function(r){return r.type==='Extravasation';}).length;
+  var total=data.length;
+  var high=data.filter(function(r){return parseInt(r.grade)>=2;}).length;
+  var rate=total>0?((high/total)*100).toFixed(1):0;
+
+  var set=function(id,val){var el=document.getElementById(id);if(el)el.textContent=val;};
+  set('d-phl',phl); set('d-inf',inf); set('d-ext',ext);
+  set('d-total',total); set('d-high',high); set('d-rate',rate+'%');
+
+  var mPhl=new Array(12).fill(0),mInf=new Array(12).fill(0),
+      mExt=new Array(12).fill(0),mHigh=new Array(12).fill(0);
+  data.forEach(function(r){
+    var m=new Date(r._ts).getMonth();
+    var idx=m>=9?m-9:m+3;
+    if(idx<0||idx>11)return;
+    if(r.type==='Phlebitis')mPhl[idx]++;
+    else if(r.type==='Infiltration')mInf[idx]++;
+    else if(r.type==='Extravasation')mExt[idx]++;
+    if(parseInt(r.grade)>=2)mHigh[idx]++;
+  });
+
+  Object.values(S.charts).forEach(function(c){try{c.destroy();}catch(e){}});
+  S.charts={};
+
+  var mc=document.getElementById('monthChart');
+  if(mc&&typeof Chart!=='undefined'){
+    S.charts.month=new Chart(mc,{type:'bar',data:{labels:MONTHS,datasets:[
+      {label:'Phlebitis',data:mPhl,backgroundColor:'rgba(37,99,235,.6)',borderRadius:3},
+      {label:'Infiltration',data:mInf,backgroundColor:'rgba(124,58,237,.6)',borderRadius:3},
+      {label:'Extravasation',data:mExt,backgroundColor:'rgba(180,83,9,.6)',borderRadius:3},
+      {label:'Grade≥2',data:mHigh,type:'line',borderColor:'rgba(251,113,133,.9)',
+       backgroundColor:'transparent',borderWidth:2,pointRadius:3}
+    ]},options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},
+      scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+
+    var gc=[0,1,2,3,4].map(function(g){return data.filter(function(r){return parseInt(r.grade)===g;}).length;});
+    S.charts.grade=new Chart(document.getElementById('gradeChart'),{type:'bar',
+      data:{labels:['G0','G1','G2','G3','G4'],datasets:[{data:gc,
+        backgroundColor:['#BBF7D0','#FDE68A','#FCA5A5','#F87171','#DC2626'],
+        borderWidth:0,borderRadius:4}]},
+      options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+
+    var typeData=[phl,inf,ext];
+    S.charts.type=new Chart(document.getElementById('typeChart'),{type:'doughnut',
+      data:{labels:['Phlebitis','Infiltration','Extravasation'],
+        datasets:[{data:typeData,
+          backgroundColor:['rgba(37,99,235,.7)','rgba(124,58,237,.7)','rgba(180,83,9,.7)'],
+          borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{labels:{font:{size:9},boxWidth:10}}}}});
+
+    S.charts.trend=new Chart(document.getElementById('trendChart'),{type:'line',
+      data:{labels:MONTHS,datasets:[
+        {label:'Phlebitis',data:mPhl,borderColor:'#2563EB',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.4,pointRadius:3},
+        {label:'Infiltration',data:mInf,borderColor:'#7C3AED',backgroundColor:'rgba(124,58,237,.1)',fill:true,tension:.4,pointRadius:3},
+        {label:'Extravasation',data:mExt,borderColor:'#B45309',backgroundColor:'rgba(180,83,9,.1)',fill:true,tension:.4,pointRadius:3}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},
+        scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+  }
+
+  var sites={};
+  data.forEach(function(r){var s=r.site||'-';sites[s]=(sites[s]||0)+1;});
+  var siteRate=Object.entries(sites).map(function(e){
+    var ph=data.filter(function(r){return r.site===e[0]&&parseInt(r.grade)>=2;}).length;
+    return {site:e[0],tot:e[1],ph:ph,rate:e[1]>0?((ph/e[1])*100).toFixed(1):0};
+  }).sort(function(a,b){return b.ph-a.ph;});
+  var srl=document.getElementById('site-rate-list');
+  if(srl) srl.innerHTML=siteRate.slice(0,6).map(function(s){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)">'
+      +'<div style="flex:1;font-size:12px">'+s.site+'</div>'
+      +'<div style="font-size:11px;color:var(--txt3)">'+s.ph+'/'+s.tot+'</div>'
+      +'<div style="width:60px;height:6px;background:var(--bdr2);border-radius:99px;overflow:hidden">'
+        +'<div style="height:100%;background:'+(parseFloat(s.rate)>=5?'var(--rose-m)':'var(--green-m)')+';width:'+Math.min(parseFloat(s.rate)*10,100)+'%;border-radius:99px"></div>'
+      +'</div>'
+      +'<div style="font-size:12px;font-weight:600;color:'+(parseFloat(s.rate)>=5?'var(--rose)':'var(--green)')+'">'+s.rate+'%</div>'
+      +'</div>';
+  }).join('')||'<p style="font-size:13px;color:var(--txt3)">ยังไม่มีข้อมูล</p>';
+}
+
+// ── SCALE REFERENCE ──
+function showRefTab(t){
+  ['phl','inf','ext'].forEach(function(x){
+    var el=document.getElementById('rt-'+x);
+    if(el)el.classList.toggle('on',x===t);
+  });
+  var ref=REF[t];
+  if(!ref)return;
+  var html='<div style="font-size:12px;color:var(--txt2);margin-bottom:12px">📚 ที่มา: '+ref.src+'</div>';
+  ref.grades.forEach(function(g){
+    var bgMap={'#BBF7D0':'#F0FDF4','#FDE68A':'#FFFBEB','#FCA5A5':'#FFF7ED','#F87171':'#FFF1F2','#DC2626':'#FEF2F2'};
+    var bg=bgMap[g.color]||'#F8F8F8';
+    html+='<div style="border-left:4px solid '+g.color+';background:'+bg+
+      ';border-radius:0 12px 12px 0;padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<div style="width:28px;height:28px;border-radius:9px;background:'+g.color+
+          ';color:'+g.tc+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">'+g.g+'</div>'
+        +'<div style="font-size:13px;font-weight:600;color:var(--txt)">Grade '+g.g+'</div>'
+      +'</div>'
+      +'<div style="font-size:12px;color:var(--txt2);margin-bottom:5px;line-height:1.6"><strong>อาการ:</strong> '+g.syms+'</div>'
+      +'<div style="font-size:12px;color:var(--txt);line-height:1.6;background:rgba(255,255,255,.6);border-radius:8px;padding:6px 8px"><strong>การพยาบาล:</strong> '+g.care+'</div>'
+      +'</div>';
+  });
+  var rtc=document.getElementById('ref-tab-content');
+  if(rtc)rtc.innerHTML=html;
+}
+
 </script>
 </body>
 </html>
