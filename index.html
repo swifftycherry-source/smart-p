@@ -148,7 +148,7 @@ select.fi{cursor:pointer}
 @keyframes min{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mhandle{width:40px;height:4px;background:var(--bdr2);border-radius:99px;margin:0 auto 16px}
 .mtitle{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.chart-wrap{position:relative;height:200px;margin:8px 0}
+.chart-wrap{position:relative;height:220px;min-height:220px;margin:8px 0;width:100%}
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 14px 0}
 .chart-card{background:var(--sur);border-radius:var(--rl);padding:14px;box-shadow:var(--sh);border:1px solid var(--bdr)}
 .chart-card h3{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px}
@@ -1023,18 +1023,14 @@ async function syncSheets(){
       var id=String(r[0]||'sh_'+i);
       // Parse timestamp - try multiple formats
       var tsStr=String(r[1]||'');
-      var tsTime=Date.now();
-      if(tsStr){
-        var parsed=new Date(tsStr).getTime();
-        if(!isNaN(parsed)) tsTime=parsed;
-      }
+      var tsTime=parseTsToMs(tsStr);
       return {
         _id:     id,
         _ts:     tsTime,
         _ri:     i+1,       // data row index (1=first data row, header is row 0)
         _synced: true,
         _img:    imgMap[id]||'',  // restore local thumbnail
-        ts:      tsStr,           // display as-is from Sheets
+        ts:      tsStr,
         type:    String(r[2]||'Phlebitis'),
         hn:      String(r[3]||'-'),
         name:    String(r[4]||'-'),
@@ -1111,6 +1107,33 @@ function cpCode(){
     .catch(()=>toast('เลือกข้อความและคัดลอกเอง','amber'));
 }
 
+// ── PARSE TIMESTAMP TO MILLISECONDS (handles Buddhist year) ──
+function parseTsToMs(ts) {
+  if (!ts) return Date.now();
+  var s = String(ts).trim();
+  // If already a number (unix ms)
+  if (!isNaN(Number(s)) && Number(s) > 1000000000000) return Number(s);
+  // Try direct parse first
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    // If year > 2100, it's probably Buddhist year - subtract 543 years
+    if (d.getFullYear() > 2100) {
+      d.setFullYear(d.getFullYear() - 543);
+    }
+    return d.getTime();
+  }
+  // Try Thai format: "3/6/2569 11:21:54" or "3/6/2569"
+  var m = s.match(/(\d+)\/(\d+)\/(\d+)/);
+  if (m) {
+    var day = parseInt(m[1]), mon = parseInt(m[2]), yr = parseInt(m[3]);
+    // Buddhist year correction
+    if (yr > 2100) yr -= 543;
+    var td = new Date(yr, mon - 1, day);
+    if (!isNaN(td.getTime())) return td.getTime();
+  }
+  return Date.now();
+}
+
 // ── FORMAT TIMESTAMP ──
 function formatTs(ts){
   if(!ts) return '-';
@@ -1179,11 +1202,11 @@ function loadDash(){
   } else {
     var fyInt=parseInt(fy);
     var adYear=fyInt-543;
-    var fyStart=new Date(adYear-1,9,1);
-    var fyEnd=new Date(adYear,8,30,23,59,59);
+    var fyStartMs=new Date(adYear-1,9,1).getTime();
+    var fyEndMs=new Date(adYear,8,30,23,59,59).getTime();
     data=S.history.filter(function(r){
-      var d=new Date(r._ts);
-      return d>=fyStart&&d<=fyEnd&&(wardSel==='all'||r.ward===wardSel);
+      var ts=typeof r._ts==='number'?r._ts:parseTsToMs(r.ts||'');
+      return ts>=fyStartMs&&ts<=fyEndMs&&(wardSel==='all'||r.ward===wardSel);
     });
   }
 
@@ -1229,9 +1252,9 @@ function loadDash(){
       {label:'Extravasation',data:mExt,backgroundColor:'rgba(180,83,9,.6)',borderRadius:3},
       {label:'Grade≥2',data:mHigh,type:'line',borderColor:'rgba(251,113,133,.9)',
        backgroundColor:'transparent',borderWidth:2,pointRadius:3}
-    ]},options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{font:{size:9},boxWidth:10}}},
-      scales:{x:{ticks:{font:{size:8}}},y:{ticks:{font:{size:9}},beginAtZero:true}}}});
+    ]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},
+      plugins:{legend:{labels:{font:{size:9},boxWidth:10,padding:6}}},
+      scales:{x:{ticks:{font:{size:8},maxRotation:0}},y:{ticks:{font:{size:9}},beginAtZero:true,grace:'5%'}}}});
 
     var gc=[0,1,2,3,4].map(function(g){return data.filter(function(r){return parseInt(r.grade)===g;}).length;});
     S.charts.grade=new Chart(document.getElementById('gradeChart'),{type:'bar',
