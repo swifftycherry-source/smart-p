@@ -219,9 +219,47 @@ select.fi{cursor:pointer}
   <div class="stat"><div class="stat-n" id="st-t">0</div><div class="stat-l">ทั้งหมด</div></div>
 </div>
 
+<!-- AUTO-DIAGNOSIS -->
+<div class="card">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>🤖 วินิจฉัยแยกโรคอัตโนมัติ</div>
+  <div class="grid2" style="margin-bottom:8px">
+    <div><label class="fl">Blood Return (ดูดเลือดย้อนกลับ)</label>
+      <select class="fi" id="dx-blood">
+        <option value="unknown">ไม่ได้ตรวจสอบ</option>
+        <option value="yes">มี — ไหลย้อนกลับปกติ</option>
+        <option value="no">ไม่มี — ดูดไม่ได้เลือด</option>
+      </select>
+    </div>
+    <div><label class="fl">ลักษณะผิวหนัง</label>
+      <select class="fi" id="dx-skin">
+        <option value="normal">ปกติ</option>
+        <option value="warmred">ร้อน + แดง (Warm/Erythema)</option>
+        <option value="coolpale">เย็น + ซีด (Cool/Pale)</option>
+      </select>
+    </div>
+  </div>
+  <label class="fl">ชนิดสารน้ำ/ยาที่ได้รับ</label>
+  <select class="fi" id="dx-drug" style="margin-bottom:10px">
+    <option value="none">สารน้ำทั่วไป / ไม่ทราบ (0.9%NSS)</option>
+    <option value="vasopressor">🔥 Vasopressor (Norepinephrine, Dopamine, Dobutamine, Adrenaline)</option>
+    <option value="chemo_warm">🔥 เคมีบำบัดกลุ่มประคบอุ่น (Vincristine, Vinblastine, Etoposide, Cyclophosphamide ฯลฯ)</option>
+    <option value="oxaliplatin">🔥 Oxaliplatin (ห้ามประคบเย็น)</option>
+    <option value="variable">⚖️ Hyperosmolar/Irritant (Calcium, KCL, NaHCO3, Dextrose&gt;10%, TPN, Phenytoin, Paclitaxel)</option>
+    <option value="mannitol">🧊 Mannitol 20%</option>
+    <option value="anthracycline">🧊 เคมีบำบัดกลุ่ม Anthracycline (Doxorubicin, Idarubicin, Epirubicin)</option>
+    <option value="platinum">🧊 เคมีบำบัดอื่น (Cisplatin เข้มข้น, Mitomycin C, Dactinomycin)</option>
+    <option value="cold_general">🧊 ยาปฏิชีวนะ/ยานอนหลับ/ยาหัวใจ (Vancomycin, Amiodarone, Diazepam, Digoxin ฯลฯ)</option>
+  </select>
+  <button class="btn btn-purple" onclick="autoDiagnose()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    วินิจฉัยอัตโนมัติ
+  </button>
+  <div id="dx-result" style="display:none;margin-top:10px"></div>
+</div>
+
 <!-- TYPE SELECTOR -->
 <div class="card">
-  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>เลือกประเภทภาวะแทรกซ้อน</div>
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>ประเภทภาวะแทรกซ้อน <span style="font-weight:400;color:var(--txt3);font-size:11px">(หรือเลือกเองด้านล่าง)</span></div>
   <div class="seg-ctrl">
     <button class="seg-btn phl on" onclick="setType('phl',this)">🔴 Phlebitis</button>
     <button class="seg-btn inf" onclick="setType('inf',this)">🟣 Infiltration</button>
@@ -421,6 +459,81 @@ select.fi{cursor:pointer}
 <div style="height:16px"></div>
 </div></div>
 
+<!-- CQI SCREEN -->
+<div class="sc" id="sc-cqi"><div class="pb">
+<div class="topbar">
+  <div><div class="tb-title">CQI Plan</div><div class="tb-sub">การพัฒนาคุณภาพต่อเนื่อง</div></div>
+  <button class="ib" onclick="openAddCQI()" title="เพิ่มแผน">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
+
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ตัวชี้วัดคุณภาพ (KPI)</div>
+  <div class="info ig">🎯 อัตรา Phlebitis &lt; 5% ต่อเดือน (มาตรฐาน JCI / Infusion Therapy Standards)</div>
+  <div class="info ib2">🎯 ประเมิน VIP/Infiltration/Extravasation Scale ครบ 100% ทุกราย</div>
+  <div class="info ia">🎯 เปลี่ยน IV site ภายใน 24 ชม. เมื่อ Grade ≥ 2</div>
+  <div class="info ip">🎯 รายงานความเสี่ยงเข้าระบบ รพ. ครบ 100% เมื่อ Grade ≥ 2</div>
+</div>
+
+<!-- Current stats snapshot -->
+<div class="dash-row">
+  <div class="dash-box"><div class="dash-n" id="cqi-total" style="color:var(--sky-d)">0</div><div class="dash-l">ประเมินสะสม</div></div>
+  <div class="dash-box"><div class="dash-n" id="cqi-rate" style="color:var(--amber-m)">0%</div><div class="dash-l">อัตรา Grade≥2</div></div>
+  <div class="dash-box"><div class="dash-n" id="cqi-goal-status">—</div><div class="dash-l">สถานะเป้าหมาย</div></div>
+</div>
+
+<!-- CQI project list -->
+<div id="cqi-list"></div>
+
+<!-- PDCA Cycle -->
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>วงจรคุณภาพ PDCA</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:#EFF6FF;border-radius:var(--r);padding:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--sky-d);margin-bottom:5px">📋 Plan</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.6">กำหนดเป้าหมาย Phlebitis Rate &lt;5%<br>ทบทวนแนวปฏิบัติ IV Care ตามมาตรฐาน</div>
+    </div>
+    <div style="background:#F0FDF4;border-radius:var(--r);padding:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:5px">▶ Do</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.6">ใช้ SMART-P ประเมินทุกราย<br>AI ช่วยวินิจฉัย + วางแผนพยาบาล</div>
+    </div>
+    <div style="background:#FFFBEB;border-radius:var(--r);padding:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:5px">🔍 Check</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.6">ดู Dashboard รายเดือน<br>วิเคราะห์แนวโน้มแยกตำแหน่ง/ประเภท</div>
+    </div>
+    <div style="background:#FFF1F2;border-radius:var(--r);padding:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--rose);margin-bottom:5px">⚡ Act</div>
+      <div style="font-size:12px;color:var(--txt2);line-height:1.6">ปรับแนวปฏิบัติ<br>อบรมทบทวนพยาบาลตามจุดที่พบปัญหา</div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Generator -->
+<div class="card" style="margin-top:10px">
+  <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>สร้างรายงาน CQI ประจำเดือน</div>
+  <div class="grid2" style="margin-bottom:10px">
+    <div><label class="fl">เดือน</label>
+      <select class="fi" id="rpt-m">
+        <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+        <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option>
+        <option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+        <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option>
+      </select>
+    </div>
+    <div><label class="fl">ปีงบประมาณ</label>
+      <select class="fi" id="rpt-y"><option>2569</option><option>2568</option><option>2567</option></select>
+    </div>
+  </div>
+  <button class="btn btn-purple" onclick="genReport()">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    สร้างรายงานประจำเดือน
+  </button>
+  <div id="rpt-out" style="margin-top:10px;display:none"></div>
+</div>
+<div style="height:16px"></div>
+</div></div>
+
 <!-- SETUP SCREEN -->
 <div class="sc" id="sc-qr"><div class="pb">
 <div class="topbar"><div><div class="tb-title">แชร์ & ตั้งค่า</div><div class="tb-sub">QR + Google Sheets</div></div></div>
@@ -525,6 +638,7 @@ function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false
   <button class="ntab" onclick="goTo('dash')" id="n-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></button>
   <button class="ntab" onclick="goTo('hist')" id="n-hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>ประวัติ</span></button>
   <button class="ntab" onclick="goTo('ref')" id="n-ref"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Scale Ref</span></button>
+  <button class="ntab" onclick="goTo('cqi')" id="n-cqi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg><span>CQI</span></button>
   <button class="ntab" onclick="goTo('qr')" id="n-qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h2v2h-2zM18 14h3M18 18v3M14 18h2v3"/></svg><span>แชร์</span></button>
 </nav>
 
@@ -557,6 +671,32 @@ function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false
   </div>
 </div>
 
+<!-- CQI ADD MODAL -->
+<div class="mbg" id="cqimod">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">📋 เพิ่มแผน CQI</div>
+    <div style="margin-bottom:8px"><label class="fl">ชื่อโครงการ/แผน</label><input class="fi" id="cq-title" placeholder="เช่น ลด Phlebitis Rate ใน ICU"></div>
+    <div style="margin-bottom:8px"><label class="fl">เป้าหมาย</label><input class="fi" id="cq-goal" placeholder="เช่น < 5% ภายใน 3 เดือน"></div>
+    <div style="margin-bottom:8px"><label class="fl">ผู้รับผิดชอบ</label><input class="fi" id="cq-owner" placeholder="ชื่อพยาบาล/ทีม"></div>
+    <div class="grid2" style="margin-bottom:8px">
+      <div><label class="fl">วันเริ่ม</label><input type="date" class="fi" id="cq-start"></div>
+      <div><label class="fl">วันสิ้นสุด</label><input type="date" class="fi" id="cq-end"></div>
+    </div>
+    <div style="margin-bottom:8px"><label class="fl">ความคืบหน้า (%)</label>
+      <input type="range" min="0" max="100" value="0" id="cq-prog" style="width:100%;margin-top:4px" oninput="document.getElementById('cq-pv').textContent=this.value+'%'">
+      <div style="text-align:center;font-size:13px;color:var(--sky-d);margin-top:2px" id="cq-pv">0%</div>
+    </div>
+    <div style="margin-bottom:14px"><label class="fl">สถานะ</label>
+      <select class="fi" id="cq-status"><option value="plan">วางแผน (Plan)</option><option value="doing">ดำเนินการ (Do)</option><option value="check">ตรวจสอบ (Check)</option><option value="done">เสร็จสิ้น (Act/Done)</option></select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-blue" onclick="saveCQI()" style="flex:2">บันทึกแผน CQI</button>
+      <button class="btn btn-outline" onclick="closeCQI()" style="flex:1">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
 <div class="tw" id="tw"></div>
 
 <script>
@@ -568,36 +708,192 @@ var REF = {
     name: 'Phlebitis Scale', src: 'Infusion Nurse Network of Thailand',
     color: '#2563EB', light: '#EFF6FF',
     grades: [
-      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'Observe IV site, Monitor', color:'#BBF7D0', tc:'#065F46' },
-      { g:1, syms:'แดงรอบตำแหน่งแทงเข็ม ปวดหรือไม่ปวดก็ได้ (Erythema ± pain)', care:'Change IV site, Monitor', color:'#FDE68A', tc:'#92400E' },
-      { g:2, syms:'ปวด + แดงรอบตำแหน่งแทงเข็ม บวมหรือไม่บวมก็ได้ (Pain + erythema ± edema)', care:'Change IV site, Dry warm compress, Elevate limb, Monitor', color:'#FCA5A5', tc:'#991B1B' },
-      { g:3, syms:'ปวดรอบตำแหน่งแทงเข็ม + รอยแดง + มีรอยแดงเป็นเส้น (Streak) + คลำหลอดเลือดแข็ง (Cord)', care:'Change IV site, Dry warm compress, Elevate limb, Notify physician, Incident report, Monitor', color:'#F87171', tc:'#7F1D1D' },
-      { g:4, syms:'ปวด + แดง + รอยเส้น + คลำก้อนแข็ง >1 นิ้ว + มีหนอง (Purulent drainage)', care:'Change IV site, Dry warm compress, Elevate limb, Notify physician, Incident report, Monitor', color:'#DC2626', tc:'#fff' }
+      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'1) Observe IV site ตรวจสอบตำแหน่งสายสวนทุก 8-12 ชม.  2) ประเมินอาการ/อาการแสดงโดยวิธี ดู-คลำ-ถาม-ฟัง ทุกครั้งที่ให้การพยาบาล', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'แดงรอบตำแหน่งแทงเข็ม ปวดหรือไม่ปวดก็ได้ (Erythema ± pain)', care:'1) ถอดสายสวน/เปลี่ยนตำแหน่งใหม่ทันที  2) สังเกตอาการต่ออย่างน้อย 48 ชม. อาจถึง 96 ชม. (Postinfusion phlebitis)  3) ให้คำแนะนำผู้ป่วยแจ้งพยาบาลทันทีหากปวด แสบ ร้อน บวม', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ปวด + แดงรอบตำแหน่งแทงเข็ม บวมหรือไม่บวมก็ได้ (Pain + erythema ± edema)', care:'1) การพยาบาลเหมือน Grade 1  2) ประคบอุ่นหรือประคบเย็นแบบแห้ง (Dry warm/cold compression)  3) ยกตำแหน่งที่เกิดให้สูงกว่าระดับหัวใจ  4) จัดการ Discomfort: Non-pharmacologic (ประคบ, ยกแขน) และ Pharmacologic ตามแผนการรักษา', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ปวดรอบตำแหน่งแทงเข็ม + รอยแดง + มีรอยแดงเป็นเส้น (Streak) + คลำหลอดเลือดแข็ง (Cord)', care:'1) การพยาบาลเหมือน Grade 2  2) รายงานแพทย์ และรายงานความเสี่ยง (Incident report) ทันที  3) Re-evaluate: alternative vascular access, medication, infusion rate, diluent', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'ปวด + แดง + รอยเส้น + คลำก้อนแข็ง >1 นิ้ว + มีหนอง (Purulent drainage)', care:'1) การพยาบาลเหมือน Grade 3  2) กรณีเป็นหนอง Monitor signs of systemic infection (SIRS/Sepsis criteria) ทุก 1-2 ชม.  3) รายงานแพทย์ด่วน พิจารณา Culture และ Antibiotics  4) รายงานความเสี่ยงเข้าระบบโรงพยาบาลทันที', color:'#DC2626', tc:'#fff' }
     ]
   },
   inf: {
     name: 'Infiltration Scale', src: 'Infusion Nurses Network Association (2024)',
     color: '#7C3AED', light: '#F5F3FF',
     grades: [
-      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'ประเมินตำแหน่ง ความถี่ ลักษณะผู้ป่วย ชนิดสารน้ำ/ยา', color:'#BBF7D0', tc:'#065F46' },
-      { g:1, syms:'ผิวเย็น ซีด บวม <1 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'หยุดสารน้ำ/ยาทันที, ตรวจสอบสายสวน, ถอดสายสวน, เปลี่ยนตำแหน่ง, ประเมินเหมือน Grade 0', color:'#FDE68A', tc:'#92400E' },
-      { g:2, syms:'ผิวเย็น ซีด บวม 1-6 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'การพยาบาลเหมือน Grade 1, ยกบริเวณที่เกิด Infiltration ให้สูง', color:'#FCA5A5', tc:'#991B1B' },
-      { g:3, syms:'ผิวเย็นซีด บวมใส บวมอย่างเห็นได้ชัด >6 นิ้ว ปวดเล็กน้อยถึงปานกลาง อาจมีอาการชา', care:'การพยาบาลเหมือน Grade 2, บันทึก/ถ่ายภาพ วัดลักษณะผิวหนัง ดูแลความสุขสบาย รายงานแพทย์', color:'#F87171', tc:'#7F1D1D' },
-      { g:4, syms:'ผิวเย็นซีด บวมใส ตึง มีตุ่มน้ำ ผิวหนังปริแตก บวมอย่างเห็นได้ชัด >6 นิ้ว กดบุ๋ม ปวดปานกลางถึงรุนแรง การไหลเวียนเลือดลดลง', care:'การพยาบาลเหมือน Grade 3, รายงานแพทย์เพื่อพิจารณารักษาโดยด่วน ระวัง Compartment Syndrome', color:'#DC2626', tc:'#fff' }
+      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'1) ประเมินตำแหน่งที่ให้สารน้ำตามมาตรฐาน  2) ความถี่การประเมินตามลักษณะผู้ป่วย ชนิดของสารน้ำ/ยา (ทั่วไปทุก 4 ชม., วิกฤต/ผู้สูงอายุ/โรคร่วมทุก 1-2 ชม., เด็กทุก 1 ชม., ยา/สารน้ำทำลายเนื้อเยื่อทุก 1 ชม.)', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'ผิวเย็น ซีด บวม <1 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'1) หยุดสารน้ำ/ยาทันที ตรวจสอบตำแหน่ง (ใช้ syringe ขนาดเล็กดูดดูการไหลย้อนกลับของเลือด)  2) ดูดสารน้ำ/ยาออกให้มากที่สุด  3) ถอดสายสวนออก กดเบาๆเพื่อหยุดเลือด เปลี่ยนตำแหน่งให้สารน้ำใหม่  4) ประเมินซ้ำเหมือน Grade 0', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ผิวเย็น ซีด บวม 1-6 นิ้ว อาจปวดหรือไม่ปวดก็ได้', care:'1) การพยาบาลเหมือน Grade 1  2) ยกตำแหน่งที่เกิดสูงกว่าระดับหัวใจ ส่งเสริมการดูดซึมกลับทางระบบน้ำเหลือง', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ผิวเย็นซีด บวมใส บวมอย่างเห็นได้ชัด >6 นิ้ว ปวดเล็กน้อยถึงปานกลาง อาจมีอาการชา', care:'1) การพยาบาลเหมือน Grade 2  2) บันทึกขนาด ลักษณะผิวหนัง ชนิดสารน้ำ/ยา เวลา ปริมาตรที่รั่วซึม อาการ อาการปวด และการพยาบาลที่ให้  3) รายงานแพทย์เพื่อพิจารณาการรักษา', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'ผิวเย็นซีด บวมใส ตึง มีตุ่มน้ำ ผิวหนังปริแตก บวมอย่างเห็นได้ชัด >6 นิ้ว กดบุ๋ม ปวดปานกลางถึงรุนแรง การไหลเวียนเลือดลดลง', care:'1) การพยาบาลเหมือน Grade 3  2) รายงานแพทย์พิจารณาการรักษาโดยด่วน/ปรึกษาแพทย์เฉพาะทาง หากสงสัย Compartment Syndrome (ชีพจรเบา/คลำไม่ได้)  3) รายงานความเสี่ยงเข้าระบบโรงพยาบาลทันที', color:'#DC2626', tc:'#fff' }
     ]
   },
   ext: {
-    name: 'Extravasation Scale', src: 'Infusion Nurses Network Association (2024)',
+    name: 'Extravasation Scale', src: 'Pathomjaruwat et al. 2021; Gorski et al. 2021 J Infus Nurs; Infusion Nurse Network of Thailand + BD',
     color: '#B45309', light: '#FFFBEB',
     grades: [
-      { g:0, syms:'ไม่มีอาการ/อาการแสดง', care:'ประเมินตำแหน่ง ความถี่ ลักษณะผู้ป่วย ชนิดสารน้ำ/ยา', color:'#BBF7D0', tc:'#065F46' },
-      { g:1, syms:'ปวดบริเวณที่ให้สารน้ำ/ยา ไม่แดง บวมน้อย (1-10%) Swelling', care:'หยุดสารน้ำ/ยาและปลด IV SET, ดูดสารน้ำ/ยาออก, ถอดสายสวน, Dry warm/cold compress, ถ่ายภาพ บันทึก, ประเมิน 8 ชม./2 วัน', color:'#FDE68A', tc:'#92400E' },
-      { g:2, syms:'ปวด บวมเล็กน้อย (10-25%) เริ่มรอยแดงกระจายตำแหน่งที่มีการรั่วซึม คล้าย Capillary refill 1-2 วินาที', care:'การพยาบาลเหมือน Grade 1, รายงานแพทย์พิจารณาให้ Antidote', color:'#FCA5A5', tc:'#991B1B' },
-      { g:3, syms:'ปวด บวมปานกลาง (25-50%) มีรอยแดงกระจายและรอบๆ ตำแหน่ง ซีก (Vasopressor) Capillary refill 1-2 วินาที', care:'การพยาบาลเหมือน Grade 2, ดูแลผลไม่ดีขึ้นใน 7 วัน รายงานศัลยแพทย์ ติดตามอาการอย่างน้อยวันละครั้ง', color:'#F87171', tc:'#7F1D1D' },
-      { g:4, syms:'ปวด บวมมาก (>50%) รอยแดงมากเกินขอบเขตรอยบวม ซีก (Non-vasopressor) Capillary refill >4 วินาที ผิวหนังปริแตก มีตุ่มน้ำหรือเนื้อตาย', care:'การพยาบาลเหมือน Grade 3, ห้าม Dry warm/cold compress, ทำแผลแบบ Wet dressing ด้วย NSS', color:'#DC2626', tc:'#fff' }
+      { g:0, syms:'ปกติ (Normal) — ไม่มีอาการปวดหรือภาวะ Extravasation', care:'1) ประเมินอาการแสดงทางผิวหนังของตำแหน่งที่ให้สารน้ำ  2) หากสารน้ำมีความเสี่ยง ประเมินต่อเนื่องทุก 1 ชั่วโมง', color:'#BBF7D0', tc:'#065F46' },
+      { g:1, syms:'น้อย (Mild) — สีผิวซีด/ชมพู ยังไม่มีตุ่มน้ำพอง ผิวเย็น/อุ่น บวมแบบกดไม่บุ๋ม เคลื่อนไหวจำกัด ปวดเล็กน้อย Pain score 1-3 อุณหภูมิกายปกติ (36.5-37.5°C) บวม 1-10%', care:'1) หยุดให้สารน้ำทันทีและปลดข้อต่อออกจากการให้ยาที่กำลังให้ผู้ป่วย  2) อย่า Flush NSS ในอุปกรณ์เข็มที่มีการเกิด Extravasation เนื่องจากยาที่ค้างจะเข้าเนื้อเยื่อมากขึ้น  3) ประเมินการไหลเวียนในหลอดเลือดดูดยาที่รั่วออกให้ได้มากที่สุดโดยใช้หลอดฉีดยา 3-5 ml  4) ในยาบางชนิดพิจารณาทำ Aspirate โดยแพทย์ผู้เชี่ยวชาญ ยกเว้น Contrast  5) ควรให้ Antidote เมื่อจำเป็น  6) เอาเข็มออกและกดหยุดเลือด (โดยหลีกเลี่ยงการกดตำแหน่งที่เอาเข็มออกหรือแผล)  7) ประคบร้อนหรือเย็นตามชนิดของยา (ดูตารางแนะนำยาด้านล่าง)  8) ยกบริเวณที่ยารั่ว/บวมสูงกว่าระดับหัวใจ  9) หลีกเลี่ยงการทำ Neutralize ในกรณี Acidic & Alkaloid  10) รายงานแพทย์ ** ติดตามดูอาการทุก 8 ชั่วโมง เป็นเวลา 2 วัน อาการจะดีขึ้นตามลำดับ (จดบันทึก: ชนิดของยา เวลา และปริมาตรของยาที่รั่ว/บันทึกภาพ)', color:'#FDE68A', tc:'#92400E' },
+      { g:2, syms:'ปานกลางระยะต้น — สีผิวเริ่มแดง/แดงมากขึ้น เริ่มมีรอยกระจาย บวม 10-25% Capillary refill ปกติ 1-2 วินาที', care:'1) การพยาบาลเหมือน Grade 1  2) รายงานแพทย์ทันทีเพื่อพิจารณาให้ Antidote ตามชนิดยา  3) ติดตามดูอาการทุก 8 ชั่วโมง เป็นเวลา 48 ชั่วโมง (2 วัน)  4) รายงานความเสี่ยงเข้าระบบโรงพยาบาล', color:'#FCA5A5', tc:'#991B1B' },
+      { g:3, syms:'ปานกลาง (Moderate) — สีผิวแดง/แดงมากขึ้น/สีม่วงคล้ำ ผิวหนังชั้นนอกเริ่มเปลี่ยนเป็นสีม่วงคล้ำ มีผิวหนังพองเล็กน้อย อุณหภูมิผิวร้อน บวมกดบุ๋ม เคลื่อนไหวจำกัดมาก Pain score 3-5 มีไข้ >37.5°C Capillary refill 1-2 วินาทีบริเวณที่แทงเข็ม บวม 25-50%', care:'1) การพยาบาลเหมือน Grade 1 ข้อ 1-10  2) ติดตามดูอาการทุก 8 ชั่วโมง เป็นเวลา 48 ชั่วโมง (2 วัน) ควรรายงานแพทย์ถ้าแผลยังไม่ดีขึ้น  3) ถ้าอาการดีขึ้น ติดตามอาการวันละ 1 ครั้ง เป็นเวลา 1 สัปดาห์ จนกว่าอาการหรือถ่ายภาพ  4) ถ้าอาการไม่ดีขึ้นภายใน 1 สัปดาห์ ควรปรึกษาแพทย์ทางด้านศัลยกรรม', color:'#F87171', tc:'#7F1D1D' },
+      { g:4, syms:'มาก (Severe) — มีรอยดำและรอยบวมตรงกลางชัดหรือแดง มีตุ่มน้ำพอง ผิวหนังหลุดลอกลึกถึงชั้นไขมันได้ ผิวหนังมีเนื้อตายและอาจลึกถึงกระดูก อุณหภูมิผิวร้อนมาก บวมมาก เคลื่อนไหวลำบาก Pain score 5-10 อาจไม่มีความรู้สึกบางตำแหน่งที่ได้รับหัตถการ มีไข้ >37.5°C Capillary refill >4 วินาทีที่แทงเข็ม บวม >50%', care:'1) ให้การพยาบาลตามระดับน้อย (Mild) ข้อ 1-10  2) ติดตามดูอาการทุก 8 ชั่วโมง เป็นเวลา 2 วัน หลังจากนั้นถ้าแผลยังไม่ดีขึ้นควรปรึกษาแพทย์ ถ้าอาการดีขึ้นติดตามอาการวันละ 1-2 ครั้ง (กรณีเป็นแผลเปิดให้ Wet dressing with NSS)  3) ถ้าอาการไม่ดีขึ้นภายใน 2 วัน ควรปรึกษาแพทย์ทางด้านศัลยกรรม เพื่อทำการรักษาโดยการผ่าตัดเนื้อตายต่อไป  4) รายงานความเสี่ยงเข้าระบบโรงพยาบาลทันที ⚠️ ห้ามประคบร้อน/เย็นในกรณีมีเนื้อตาย — ใช้ Wet dressing ด้วย NSS แทน', color:'#DC2626', tc:'#fff' }
     ]
   }
 };
+
+// ═══════════════════════
+//  COMPRESS & ANTIDOTE GUIDE — อ้างอิงแนวทางการพยาบาลผู้ป่วยได้รับยา/สารน้ำ
+//  ที่มีความเสี่ยงต่อการเกิด Extravasation (Infusion Nurse Network of Thailand + BD)
+//  credit: อ.ฐิติพร ปฐมจารุวัฒน์ คณะพยาบาลศาสตร์ มหาวิทยาลัยธรรมศาสตร์
+// ═══════════════════════
+var COMPRESS_GUIDE = {
+  chemo_warm: {
+    label:'🔥 กลุ่มยาเคมีบำบัดที่ต้องประคบอุ่น',
+    drugs:'Bleomycin, Carmustine, Cetuximab, Cyclophosphamide, Dacarbazine, Etoposide, Gemcitabine, Teniposide, Vinblastine, Vincristine, Vindesine, Vinorelbine, Docetaxel',
+    method:'ประคบอุ่น (Warm compress)',
+    antidote:'Hyaluronidase + ทา 1% Topical hydrocortisone cream',
+    reason:'ช่วยกระจายยาออกจากบริเวณเนื้อเยื่อ ลดความเข้มข้นเฉพาะที่'
+  },
+  vasopressor: {
+    label:'🔥 กลุ่มยากระตุ้นความดัน (Vasopressor)',
+    drugs:'Adrenaline (Epinephrine), Dobutamine, Dopamine, Norepinephrine',
+    method:'ประคบอุ่น (Warm compress)',
+    antidote:'Phentolamine, Terbutaline, 2% Topical nitroglycerin ointment',
+    reason:'ช่วยขยายหลอดเลือด (Vasodilation) ต้านฤทธิ์การหดตัวของหลอดเลือดจากยา'
+  },
+  cold_general: {
+    label:'🧊 กลุ่มสารน้ำ/ยาที่ต้องประคบเย็น (ไม่ต้องมี Antidote)',
+    drugs:'Hyperosmolar: 20% Lipid, 50% MgSO4 | ยาปฏิชีวนะ (กรด/ด่าง): Aminophylline, Acyclovir, Ceftriaxone, Gancyclovir, Penicillin, Liposomal, Amphotericin B, Cefotaxime, Co-trimoxazole, Erythromycin, Vancomycin | ยานอนหลับ/กันชัก: Diazepam, Phenobarbital, Thiopental | ยาหัวใจ: Digoxin, Amiodarone, Vasopressin | เคมีบำบัด: Methotrexate',
+    method:'ประคบเย็นแบบแห้ง (Dry cold compress)',
+    antidote:'ไม่จำเป็นต้องให้ Antidote (No needed antidote)',
+    reason:'ลดการดูดซึมยาเข้าสู่เนื้อเยื่อ ลดการอักเสบเฉพาะที่'
+  },
+  mannitol: {
+    label:'🧊 Mannitol (Hyperosmolar)',
+    drugs:'Mannitol 20%',
+    method:'ประคบเย็นแบบแห้ง (Dry cold compress)',
+    antidote:'Hyaluronidase + ทา 1% Topical hydrocortisone cream',
+    reason:'ลดการกระจายของสารน้ำเข้มข้นสูงเข้าสู่เนื้อเยื่อ'
+  },
+  anthracycline: {
+    label:'🧊 กลุ่มยาเคมีบำบัด Anthracycline',
+    drugs:'Doxorubicin, Idarubicin, Epirubicin',
+    method:'ประคบเย็นแบบแห้ง (Dry cold compress)',
+    antidote:'Dexrazoxane, Dimethyl sulfoxide (DMSO)',
+    reason:'จำกัดการแพร่กระจายของยาเคมีบำบัดกลุ่มทำลาย DNA'
+  },
+  platinum: {
+    label:'🧊 กลุ่มยาเคมีบำบัดอื่น (ไม่รวม Oxaliplatin)',
+    drugs:'Cisplatin (>20 ml/ความเข้มข้น >0.5 mg/ml), Mitomycin C, Dactinomycin',
+    method:'ประคบเย็นแบบแห้ง (Dry cold compress)',
+    antidote:'Sodium thiosulfate, DMSO',
+    reason:'ลดการทำลายเนื้อเยื่อจากยาเคมีบำบัดความเข้มข้นสูง'
+  },
+  variable: {
+    label:'⚖️ กลุ่มที่ต้องพิจารณาประคบร้อนหรือเย็นตามอาการ',
+    drugs:'KCl >40 mmol/L, 7.5% NaHCO3, 10%/5.5% Calcium gluconate, NSS เข้มข้น >3-10%, Contrast media, Dextrose >10%, TPN/Parenteral nutrition, Phenytoin, Paclitaxel',
+    method:'ยากลุ่มนี้ทำลายเนื้อเยื่อและทำให้หลอดเลือดหดตัว — หากมีการอักเสบ/ปวดรุนแรง (แสดงว่าหลอดเลือดหดตัวแล้ว) ควรประคบอุ่น | ⚠️ ข้อยกเว้น: Paclitaxel พบว่าประคบอุ่นทำให้เนื้อเยื่อเสียหายมากกว่า จึงแนะนำประคบเย็นแทน',
+    antidote:'Hyaluronidase + ทา 1% Topical hydrocortisone cream',
+    reason:'ต้องประเมินอาการทางคลินิกประกอบการตัดสินใจเลือกวิธีประคบ'
+  },
+  oxaliplatin: {
+    label:'🔥 Oxaliplatin (ห้ามประคบเย็น)',
+    drugs:'Oxaliplatin',
+    method:'ประคบอุ่นเท่านั้น — ห้ามประคบเย็นบริเวณที่ได้ยา',
+    antidote:'Sodium thiosulfate + ทา 1% Topical hydrocortisone cream (ลดอาการแดง)',
+    reason:'ยานี้กดการรับความรู้สึกบริเวณที่ได้รับยา การประคบเย็นจะทำให้เกิดอาการชา (Cold-induced paresthesia) มากขึ้น'
+  },
+  none: {
+    label:'สารน้ำทั่วไป (Non-vesicant)',
+    drugs:'0.9%NSS, สารน้ำมาตรฐานทั่วไป',
+    method:'ประคบอุ่นแบบแห้ง (Dry warm compress)',
+    antidote:'ไม่จำเป็น',
+    reason:'ส่งเสริมการไหลเวียนเลือดและการดูดซึมกลับ'
+  }
+};
+
+// ═══════════════════════
+//  WOUND CARE PROTOCOL ตามความรุนแรง (สำหรับ Extravasation)
+//  อ้างอิง: Beall et al. 2013, Cho et al. 2019, Sagheb et al. 2022
+// ═══════════════════════
+var WOUND_CARE = {
+  mild_moderate: {
+    title:'การทำความสะอาดแผล — ระดับ Mild/Moderate',
+    steps:[
+      'ทำความสะอาดแผลด้วย Normal saline solution (NSS)',
+      'ระดับ Mild: ทาด้วยยา 1% Hydrocortisone cream ช่วยลดการอักเสบ',
+      'ระดับ Moderate: ทาด้วย Paraffin tulle with 0.5% Chlorhexidine acetate cream (ช่วยรักษาความชุ่มชื้นของเซลล์ที่ถูกทำลาย) หรือ Fibrinolysin ointment / Phenytoin ointment / Deoxyribonuclease ointment ทำแผล 2 ครั้ง/วัน',
+      'ปิดแผลด้วย Silicone dressing เช่น Mepitel หรือ Hydrogel',
+      'กรณีแผลมีการติดเชื้อ: ทาด้วยยา Bacitracin ointment ก่อน ปิดด้วย Mepitel แล้วปิดทับด้วย Sterile gauze (เพื่อให้แผลชุ่มชื้นและป้องกันการติดเชื้อ)'
+    ]
+  },
+  severe: {
+    title:'การทำความสะอาดแผล — ระดับ Severe (มีเนื้อเยื่อตาย)',
+    steps:[
+      'ทำความสะอาดแผลด้วย Normal saline solution (NSS)',
+      'ทาแผลด้วยยา Topical silver sulfadiazine with 2% Chlorhexidine acetate cream'
+    ]
+  }
+};
+
+// ═══════════════════════
+//  AUTO-DIAGNOSIS ENGINE
+//  อ้างอิงหลักการวินิจฉัยแยกโรคจาก Vascular Access Device Complications
+//  (สมาคมเครือข่ายพยาบาลผู้ให้สารน้ำทางหลอดเลือดดำ)
+// ═══════════════════════
+function autoDiagnose(){
+  var blood=document.getElementById('dx-blood').value;
+  var skin=document.getElementById('dx-skin').value;
+  var drug=document.getElementById('dx-drug').value;
+
+  var score={phl:0,inf:0,ext:0};
+  var reasons={phl:[],inf:[],ext:[]};
+
+  // Blood return: มี = สายยังทำงาน มักเป็น Phlebitis; ไม่มี = สงสัย Infiltration/Extravasation
+  if(blood==='yes'){score.phl+=3;reasons.phl.push('มี Blood Return (สายสวนยังอยู่ในหลอดเลือด)');}
+  else if(blood==='no'){score.inf+=3;score.ext+=3;reasons.inf.push('ไม่มี Blood Return');reasons.ext.push('ไม่มี Blood Return (สงสัยสารน้ำ/ยารั่วออกนอกหลอดเลือด)');}
+
+  // Skin: ร้อน+แดง = Phlebitis; เย็น+ซีด = Infiltration/Extravasation
+  if(skin==='warmred'){score.phl+=3;reasons.phl.push('ผิวร้อนและแดง (Warmth/Erythema) ตามแนวหลอดเลือด');}
+  else if(skin==='coolpale'){score.inf+=3;score.ext+=2;reasons.inf.push('ผิวเย็นซีด (Cool/Pale) ลักษณะเฉพาะของสารน้ำรั่วเข้าเนื้อเยื่อ');reasons.ext.push('ผิวเย็นซีดหรืออาจร้อนตามชนิดยา');}
+
+  // Drug type: vesicant/vasopressor/hyperosmolar => Extravasation; none => Infiltration if no blood return
+  if(drug!=='none'){
+    score.ext+=4; reasons.ext.push('ได้รับยา/สารน้ำที่มีความเสี่ยงต่อการเกิด Extravasation ('+COMPRESS_GUIDE[drug].label.replace(/[🔥🧊⚖️]/g,'').trim()+')');
+  } else {
+    score.inf+=2; reasons.inf.push('สารน้ำทั่วไป ไม่ทำลายเนื้อเยื่อ (Non-vesicant)');
+  }
+
+  // Determine winner
+  var best='phl', max=score.phl;
+  if(score.inf>max){best='inf';max=score.inf;}
+  if(score.ext>max){best='ext';max=score.ext;}
+  var total=score.phl+score.inf+score.ext;
+  var confidence=total>0?Math.round((max/total)*100):33;
+
+  var typeNames={phl:'Phlebitis (หลอดเลือดดำอักเสบ)',inf:'Infiltration (สารน้ำซึมนอกหลอดเลือด)',ext:'Extravasation (ยาซึมนอกหลอดเลือด)'};
+  var typeColors={phl:'#2563EB',inf:'#7C3AED',ext:'#B45309'};
+  var typeLight={phl:'var(--sky-l)',inf:'var(--inf-l)',ext:'var(--ext-l)'};
+
+  // Auto-select the matching type button
+  var btnMap={phl:0,inf:1,ext:2};
+  var btns=document.querySelectorAll('.seg-btn');
+  setType(best, btns[btnMap[best]]);
+
+  var allReasons=reasons[best].length?reasons[best]:['ไม่มีข้อมูลเพียงพอ ใช้ค่าเริ่มต้น'];
+  document.getElementById('dx-result').style.display='block';
+  document.getElementById('dx-result').innerHTML=
+    '<div style="background:'+typeLight[best]+';border-radius:14px;padding:14px;border:1.5px solid '+typeColors[best]+'">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<div style="font-size:20px">🎯</div>'
+      +'<div><div style="font-size:14px;font-weight:700;color:'+typeColors[best]+'">ผลวินิจฉัย: '+typeNames[best]+'</div>'
+      +'<div style="font-size:11px;color:var(--txt3)">ความมั่นใจ ~'+confidence+'%</div></div>'
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--txt);line-height:1.6"><strong>เหตุผล:</strong><br>'+allReasons.map(function(r){return '• '+r;}).join('<br>')+'</div>'
+    +'<div style="font-size:10px;color:var(--txt3);margin-top:6px;opacity:.8">⚠️ ผลจาก AI เป็นเพียงเครื่องมือช่วยตัดสินใจ พยาบาลควรใช้ดุลยพินิจทางคลินิกประกอบเสมอ</div>'
+    +'</div>';
+  toast('วินิจฉัย: '+typeNames[best]+' ✓','green');
+  if(navigator.vibrate)navigator.vibrate([20,10,20]);
+  window._dxDrug = drug; // remember for compress guidance
+}
 
 // ═══════════════════════
 //  GRADE DATA per type
@@ -620,7 +916,9 @@ var S = {
   gsUrl:localStorage.getItem('smp_gs5')||'',
   editIdx:-1, hFilter:'all',
   aiTxt:'', npTxt:'',
-  charts:{}
+  charts:{},
+  cqi:JSON.parse(localStorage.getItem('smp_cqi')||'[]'),
+  cqiEditIdx:-1
 };
 var GBG=['#D1FAE5','#FEF3C7','#FED7AA','#FECDD3','#FECACA'];
 var GTC=['#065F46','#92400E','#C2410C','#9F1239','#7F1D1D'];
@@ -667,6 +965,7 @@ function goTo(id){
   document.getElementById('n-'+id).classList.add('on');
   if(id==='hist')renderHist();
   if(id==='dash')loadDash();
+  if(id==='cqi')renderCQI();
 }
 
 // ── TYPE SELECTOR ──
@@ -724,11 +1023,17 @@ function onImg(ev) {
 async function aiScan(b64) {
   S.aiTxt=''; S.npTxt='';
   var typeNames={phl:'Phlebitis (VIP Scale)',inf:'Infiltration Scale',ext:'Extravasation Scale'};
-  var prompt = 'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้โดยเปรียบเทียบกับ '+typeNames[S.type]+' มาตรฐาน ตอบภาษาไทยแบ่งเป็น 2 ส่วน:\n\n[วิเคราะห์]: (3-4 ประโยค) สัญญาณที่เห็น + Grade ที่ประเมิน (0-4) + เหตุผลเปรียบเทียบกับมาตรฐาน '+typeNames[S.type]+'\n\n[แผนพยาบาล]: ระบุ 4-6 ข้อตามมาตรฐาน แต่ละข้อขึ้นต้นด้วย "- "';
+  var bloodEl=document.getElementById('dx-blood'), skinEl=document.getElementById('dx-skin'), drugEl=document.getElementById('dx-drug');
+  var ctxParts=[];
+  if(bloodEl&&bloodEl.value!=='unknown')ctxParts.push('Blood return: '+(bloodEl.value==='yes'?'มี':'ไม่มี'));
+  if(skinEl&&skinEl.value!=='normal')ctxParts.push('ผิวหนัง: '+(skinEl.value==='warmred'?'ร้อน+แดง':'เย็น+ซีด'));
+  if(drugEl&&drugEl.value!=='none')ctxParts.push('ชนิดยา: '+COMPRESS_GUIDE[drugEl.value].label);
+  var ctxLine=ctxParts.length?('\n\nข้อมูลทางคลินิกเพิ่มเติม: '+ctxParts.join(', ')):'';
+  var prompt = 'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้ เปรียบเทียบกับมาตรฐานทั้ง 3 scale (Phlebitis/Infiltration/Extravasation ตาม Gorski et al. Infusion Therapy Standards of Practice) แล้วระบุว่าน่าจะเป็นภาวะใดมากที่สุด โดยเน้นมาตรฐานที่ผู้ใช้เลือกไว้คือ '+typeNames[S.type]+' เป็นหลัก'+ctxLine+' ตอบภาษาไทยแบ่งเป็น 2 ส่วน:\n\n[วิเคราะห์]: (4-5 ประโยค) สัญญาณที่เห็น (สีผิว อุณหภูมิ บวม/ตุ่มน้ำ/เนื้อตาย) + ภาวะที่น่าจะเป็น (Phlebitis/Infiltration/Extravasation) พร้อมเหตุผลแยกโรค + Grade ที่ประเมิน (0-4) ตามมาตรฐาน '+typeNames[S.type]+' + ระดับความรุนแรง (ปกติ/น้อย/ปานกลาง/มาก หากเป็น Extravasation)\n\n[แผนพยาบาล]: ระบุ 8-10 ข้อแบบละเอียดครบถ้วน "จัดเต็ม" ตามมาตรฐานสากลและแนวปฏิบัติจริงของหน่วยงาน ต้องครอบคลุม: การหยุดสารน้ำ/ยาและการจัดการเบื้องต้น, การประคบร้อน/เย็นระบุชนิดยาที่เกี่ยวข้องและเหตุผล, Antidote เฉพาะยาถ้ามี (เช่น Hyaluronidase, Phentolamine, Dexrazoxane, Sodium thiosulfate), การทำแผลตามความรุนแรง (NSS, Hydrocortisone cream, Silicone dressing, Silver sulfadiazine), การยกแขน, การติดตามอาการ (ทุก 8 ชม.), การรายงานแพทย์, และการรายงานความเสี่ยงเข้าระบบโรงพยาบาลหาก Grade≥2 แต่ละข้อขึ้นต้นด้วย "- "';
   try {
     var res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
           {type:'text',text:prompt}
@@ -825,22 +1130,48 @@ function analyze(){
 
 function getRec(g,h,t){
   var html='';
-  if(h>72)html+='<div class="info ia">⏰ สาย IV คาไว้ '+h+' ชม. ควรพิจารณาเปลี่ยน</div>';
-  if(g===0)html+='<div class="info ig">'+{phl:'IV site ปกติ',inf:'ไม่มีการซึม',ext:'ไม่มีการรั่วซึม'}[t]+' ดูแลต่อเนื่อง</div>';
+  if(h>72)html+='<div class="info ia">⏰ สาย IV คาไว้ '+h+' ชม. ควรพิจารณาเปลี่ยน (มาตรฐาน 72-96 ชม.)</div>';
+  if(g===0)html+='<div class="info ig">'+{phl:'IV site ปกติ',inf:'ไม่มีการซึม',ext:'ไม่มีการรั่วซึม'}[t]+' ดูแลต่อเนื่อง ประเมินตามความถี่มาตรฐาน</div>';
+
   if(t==='phl'){
-    if(g>=2)html+='<div class="info ib2">📍 เปลี่ยนตำแหน่ง IV ทันที</div>';
-    if(g>=3)html+='<div class="info ir">พิจารณา PICC/Central line หากต้องให้ยาต่อเนื่อง</div>';
-    if(g===4)html+='<div class="info ir">ประเมิน Sepsis criteria ทันที</div>';
+    if(g>=1)html+='<div class="info ib2">🔄 ถอดสายสวน/เปลี่ยนตำแหน่งใหม่ทันที สังเกตอาการต่อ 48-96 ชม. (Postinfusion phlebitis)</div>';
+    if(g>=2)html+='<div class="info ia">🌡 ประคบอุ่น/เย็นแบบแห้ง + ยกแขนสูงกว่าระดับหัวใจ</div>';
+    if(g>=3)html+='<div class="info ir">📋 รายงานแพทย์ + พิจารณา PICC/Central line หากต้องให้ยาต่อเนื่อง</div>';
+    if(g===4)html+='<div class="info ir">🚨 กรณีมีหนอง: Monitor signs of systemic infection ทุก 1-2 ชม. ประเมิน Sepsis criteria + Blood culture</div>';
   } else if(t==='inf'){
-    if(g>=1)html+='<div class="info ia">⚠ หยุดสารน้ำ/ยาทันที ถอดสายสวน</div>';
-    if(g>=3)html+='<div class="info ir">ระวัง Compartment Syndrome รายงานแพทย์ด่วน</div>';
-    if(g>=4)html+='<div class="info ir">รายงานแพทย์โดยด่วนที่สุด</div>';
+    if(g>=1)html+='<div class="info ia">⚠ หยุดสารน้ำ/ยาทันที ใช้ Syringe เล็กดูดเช็ค Blood return ก่อนถอดสายสวน ดูดสารน้ำออกให้มากที่สุด</div>';
+    if(g>=2)html+='<div class="info ib2">⬆️ ยกตำแหน่งที่เกิดสูงกว่าระดับหัวใจ ส่งเสริมการดูดซึมกลับทางน้ำเหลือง</div>';
+    if(g>=3)html+='<div class="info ir">📸 บันทึกขนาด/ลักษณะผิวหนัง/ชนิดสารน้ำ/ปริมาตรรั่วซึม + รายงานแพทย์</div>';
+    if(g>=4)html+='<div class="info ir">🚨 ระวัง Compartment Syndrome (ชีพจรเบา/คลำไม่ได้) รายงานแพทย์ด่วนที่สุด/ปรึกษาแพทย์เฉพาะทาง</div>';
   } else {
-    if(g>=1)html+='<div class="info ia">⚠ หยุดยาทันที ดูดสารน้ำ/ยาออก ถอดสายสวน</div>';
-    if(g>=2)html+='<div class="info ir">รายงานแพทย์ พิจารณา Antidote</div>';
-    if(g===4)html+='<div class="info ir">ห้าม Dry warm/cold compress ทำแผล Wet dressing ด้วย NSS</div>';
+    if(g>=1)html+='<div class="info ia">⚠ หยุดยาทันที ปลด IV Set ดูดสารน้ำ/ยาออกด้วย Syringe เล็ก ถอดสายสวน ยกแขนสูงกว่าหัวใจ</div>';
+    if(g>=2)html+='<div class="info ir">📋 รายงานแพทย์ทันที พิจารณา Antidote ตามชนิดยา</div>';
+    if(g>=3)html+='<div class="info ir">🔍 ติดตามแผลทุกวัน หากไม่ดีขึ้นใน 7 วัน ปรึกษาศัลยแพทย์</div>';
+    if(g===4)html+='<div class="info ir">🚫 ห้าม Dry warm/cold compress — ทำแผลแบบ Wet dressing ด้วย NSS แทน</div>';
   }
-  return html||'<div class="info ib2">ดูแล dressing ให้สะอาดแห้ง</div>';
+
+  // Compress + Antidote drug guidance (Infiltration/Extravasation grade >= 1)
+  if((t==='inf'||t==='ext') && g>=1){
+    var drugSel = window._dxDrug || (document.getElementById('dx-drug') && document.getElementById('dx-drug').value) || 'none';
+    var cg = COMPRESS_GUIDE[drugSel] || COMPRESS_GUIDE.none;
+    html+='<div class="info ip">💊 <strong>'+cg.label+'</strong><br>ตัวอย่างยา: '+cg.drugs+'<br><strong>วิธีประคบ:</strong> '+cg.method+(cg.antidote?'<br><strong>Antidote:</strong> '+cg.antidote:'')+'<br><em>'+cg.reason+'</em></div>';
+  }
+
+  // Wound care protocol for Extravasation grade >= 3 (moderate/severe)
+  if(t==='ext' && g>=3){
+    var wc = (g>=4) ? WOUND_CARE.severe : WOUND_CARE.mild_moderate;
+    html+='<div class="info it"><strong>🩹 '+wc.title+'</strong><br>'+wc.steps.map(function(s,i){return (i+1)+') '+s;}).join('<br>')+'</div>';
+  } else if(t==='ext' && g===1 || t==='ext' && g===2){
+    var wc2 = WOUND_CARE.mild_moderate;
+    html+='<div class="info it"><strong>🩹 '+wc2.title+'</strong><br>'+wc2.steps.slice(0,3).map(function(s,i){return (i+1)+') '+s;}).join('<br>')+'</div>';
+  }
+
+  // Mandatory risk-incident reminder
+  if(g>=2){
+    html+='<div class="info ir" style="font-weight:600">📢 อย่าลืม! รายงานอุบัติการณ์ความเสี่ยงเข้าระบบของโรงพยาบาลทุกครั้งที่เกิดภาวะแทรกซ้อน Grade ≥ 2</div>';
+  }
+
+  return html||'<div class="info ib2">ดูแล dressing ให้สะอาดแห้ง รักษาความสะอาด IV site</div>';
 }
 
 // ── SAVE (FIX: proper base64 image handling) ──
@@ -998,6 +1329,131 @@ async function confirmDel(){
   }else{toast('ลบแล้ว ✓','green');}
 }
 document.getElementById('emod').addEventListener('click',function(e){if(e.target===this)closeMod();});
+
+// ═══════════════════════
+//  CQI — Continuous Quality Improvement
+// ═══════════════════════
+function renderCQI(){
+  // Snapshot stats
+  var total=S.history.length;
+  var high=S.history.filter(function(r){return parseInt(r.grade)>=2;}).length;
+  var rate=total>0?((high/total)*100).toFixed(1):0;
+  document.getElementById('cqi-total').textContent=total;
+  document.getElementById('cqi-rate').textContent=rate+'%';
+  var goalEl=document.getElementById('cqi-goal-status');
+  if(total===0){goalEl.textContent='—';goalEl.style.color='var(--txt3)';}
+  else if(parseFloat(rate)<5){goalEl.textContent='✅ ผ่านเป้า';goalEl.style.color='var(--green-m)';goalEl.style.fontSize='13px';}
+  else{goalEl.textContent='⚠️ เกินเป้า';goalEl.style.color='var(--rose-m)';goalEl.style.fontSize='13px';}
+
+  var el=document.getElementById('cqi-list');
+  if(!S.cqi.length){
+    el.innerHTML='<div style="text-align:center;padding:30px 16px;color:var(--txt3)"><p style="font-size:13px">ยังไม่มีแผน CQI กดปุ่ม + ด้านบนเพื่อเพิ่มแผนใหม่</p></div>';
+    return;
+  }
+  var statusIcon={plan:'📋',doing:'▶️',check:'🔍',done:'✅'};
+  var statusColor={plan:['var(--sky-l)','var(--sky-d)'],doing:['var(--amber-l)','var(--amber)'],check:['var(--inf-l)','var(--inf)'],done:['var(--green-l)','var(--green)']};
+  var statusLabel={plan:'วางแผน',doing:'ดำเนินการ',check:'ตรวจสอบ',done:'เสร็จสิ้น'};
+  el.innerHTML=S.cqi.map(function(c,i){
+    var sc=statusColor[c.status]||statusColor.plan;
+    return '<div class="cqi-item">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<span class="type-chip" style="background:'+sc[0]+';color:'+sc[1]+'">'+(statusIcon[c.status]||'📋')+' '+(statusLabel[c.status]||'วางแผน')+'</span>'
+        +'<span style="flex:1"></span>'
+        +'<button onclick="openAddCQI('+i+')" style="background:var(--sky-l);color:var(--sky-d);border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px">แก้ไข</button>'
+        +'<button onclick="delCQI('+i+')" style="background:var(--rose-l);color:var(--rose);border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer">ลบ</button>'
+      +'</div>'
+      +'<div style="font-size:14px;font-weight:600;color:var(--txt)">'+esc(c.title)+'</div>'
+      +'<div style="font-size:12px;color:var(--txt2);margin-top:4px;line-height:1.6">🎯 '+esc(c.goal)+'<br>👤 '+esc(c.owner)+'<br>📅 '+esc(c.start)+' — '+esc(c.end)+'</div>'
+      +'<div class="progress-bar"><div class="progress-fill" style="width:'+c.prog+'%;background:'+(c.status==='done'?'var(--green-m)':'var(--sky)')+'"></div></div>'
+      +'<div style="text-align:right;font-size:11px;color:var(--txt3);margin-top:3px">'+c.prog+'%</div>'
+      +'</div>';
+  }).join('');
+}
+
+function openAddCQI(idx){
+  if(typeof idx==='number' && S.cqi[idx]){
+    S.cqiEditIdx=idx;
+    var c=S.cqi[idx];
+    document.getElementById('cq-title').value=c.title||'';
+    document.getElementById('cq-goal').value=c.goal||'';
+    document.getElementById('cq-owner').value=c.owner||'';
+    document.getElementById('cq-start').value=c.start||'';
+    document.getElementById('cq-end').value=c.end||'';
+    document.getElementById('cq-prog').value=c.prog||0;
+    document.getElementById('cq-pv').textContent=(c.prog||0)+'%';
+    document.getElementById('cq-status').value=c.status||'plan';
+  } else {
+    S.cqiEditIdx=-1;
+    document.getElementById('cq-title').value='';
+    document.getElementById('cq-goal').value='';
+    document.getElementById('cq-owner').value='';
+    document.getElementById('cq-start').value='';
+    document.getElementById('cq-end').value='';
+    document.getElementById('cq-prog').value=0;
+    document.getElementById('cq-pv').textContent='0%';
+    document.getElementById('cq-status').value='plan';
+  }
+  document.getElementById('cqimod').classList.add('on');
+}
+function closeCQI(){document.getElementById('cqimod').classList.remove('on');S.cqiEditIdx=-1;}
+function saveCQI(){
+  var c={
+    title:document.getElementById('cq-title').value,
+    goal:document.getElementById('cq-goal').value,
+    owner:document.getElementById('cq-owner').value,
+    start:document.getElementById('cq-start').value,
+    end:document.getElementById('cq-end').value,
+    prog:document.getElementById('cq-prog').value,
+    status:document.getElementById('cq-status').value
+  };
+  if(!c.title){toast('กรุณากรอกชื่อแผน','amber');return;}
+  if(S.cqiEditIdx>=0){S.cqi[S.cqiEditIdx]=c;} else {S.cqi.push(c);}
+  localStorage.setItem('smp_cqi',JSON.stringify(S.cqi));
+  closeCQI(); renderCQI();
+  toast(S.cqiEditIdx>=0?'แก้ไขแผน CQI แล้ว ✓':'เพิ่มแผน CQI แล้ว ✓','green');
+}
+function delCQI(i){
+  if(!confirm('ลบแผน CQI นี้?\\n'+(S.cqi[i]?S.cqi[i].title:'')))return;
+  S.cqi.splice(i,1);
+  localStorage.setItem('smp_cqi',JSON.stringify(S.cqi));
+  renderCQI(); toast('ลบแล้ว','green');
+}
+document.getElementById('cqimod').addEventListener('click',function(e){if(e.target===this)closeCQI();});
+
+// ── MONTHLY CQI REPORT ──
+function genReport(){
+  var m=parseInt(document.getElementById('rpt-m').value);
+  var yThai=parseInt(document.getElementById('rpt-y').value);
+  // Thai fiscal year: months 10-12 belong to (yThai-1) CE year's Oct-Dec; months 1-9 belong to yThai CE year
+  var adYear=yThai-543;
+  var realY=(m>=10)?adYear-1:adYear;
+  var data=S.history.filter(function(r){
+    var d=new Date(typeof r._ts==='number'?r._ts:parseTsToMs(r.ts||''));
+    return (d.getMonth()+1)===m && d.getFullYear()===realY;
+  });
+  var total=data.length, high=data.filter(function(r){return parseInt(r.grade)>=2;}).length;
+  var rate=total>0?((high/total)*100).toFixed(1):0;
+  var phl=data.filter(function(r){return r.type==='Phlebitis';}).length;
+  var inf=data.filter(function(r){return r.type==='Infiltration';}).length;
+  var ext=data.filter(function(r){return r.type==='Extravasation';}).length;
+  var mo=document.getElementById('rpt-m');
+  var mn=mo.options[mo.selectedIndex].text;
+
+  var html='<div class="info ib2" style="margin-bottom:8px"><strong>รายงาน CQI เดือน'+mn+' ปีงบประมาณ '+yThai+'</strong></div>'
+    +'<div class="info ig">📊 จำนวนการประเมินทั้งหมด: <strong>'+total+' ครั้ง</strong> (Phlebitis '+phl+' / Infiltration '+inf+' / Extravasation '+ext+')</div>'
+    +'<div class="info '+(parseFloat(rate)>=5?'ir':'ig')+'">📈 อัตราภาวะแทรกซ้อน Grade≥2: <strong>'+rate+'%</strong> (เป้าหมาย &lt;5%)</div>'
+    +'<div class="info ia">🚨 จำนวน Grade≥2: <strong>'+high+' ราย</strong></div>';
+
+  if(data.length>0){
+    var sites={};data.forEach(function(r){var s=r.site||'-';sites[s]=(sites[s]||0)+1;});
+    var topS=Object.entries(sites).sort(function(a,b){return b[1]-a[1];})[0];
+    if(topS)html+='<div class="info ib2">📍 ตำแหน่งที่พบบ่อยที่สุด: <strong>'+topS[0]+'</strong> ('+topS[1]+' ครั้ง)</div>';
+  }
+  html+='<div class="info ip">💡 ข้อเสนอแนะ: '+(parseFloat(rate)>=5?'อัตราภาวะแทรกซ้อนเกินเป้าหมาย ควรทบทวนแนวปฏิบัติ IV Care เพิ่มการอบรม และวิเคราะห์สาเหตุร่วมกับทีม':'อัตราภาวะแทรกซ้อนอยู่ในเกณฑ์ดี ดูแลต่อเนื่องตามมาตรฐาน')+'</div>';
+
+  document.getElementById('rpt-out').innerHTML=html;
+  document.getElementById('rpt-out').style.display='block';
+}
 
 // ── SYNC ──
 async function syncSheets(){
