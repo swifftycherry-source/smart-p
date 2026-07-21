@@ -241,14 +241,24 @@ select.fi{cursor:pointer}
   <label class="fl">ชนิดสารน้ำ/ยาที่ได้รับ</label>
   <select class="fi" id="dx-drug" style="margin-bottom:10px">
     <option value="none">สารน้ำทั่วไป / ไม่ทราบ (0.9%NSS)</option>
-    <option value="vasopressor">🔥 Vasopressor (Norepinephrine, Dopamine, Dobutamine, Adrenaline)</option>
-    <option value="chemo_warm">🔥 เคมีบำบัดกลุ่มประคบอุ่น (Vincristine, Vinblastine, Etoposide, Cyclophosphamide ฯลฯ)</option>
-    <option value="oxaliplatin">🔥 Oxaliplatin (ห้ามประคบเย็น)</option>
-    <option value="variable">⚖️ Hyperosmolar/Irritant (Calcium, KCL, NaHCO3, Dextrose&gt;10%, TPN, Phenytoin, Paclitaxel)</option>
-    <option value="mannitol">🧊 Mannitol 20%</option>
-    <option value="anthracycline">🧊 เคมีบำบัดกลุ่ม Anthracycline (Doxorubicin, Idarubicin, Epirubicin)</option>
-    <option value="platinum">🧊 เคมีบำบัดอื่น (Cisplatin เข้มข้น, Mitomycin C, Dactinomycin)</option>
-    <option value="cold_general">🧊 ยาปฏิชีวนะ/ยานอนหลับ/ยาหัวใจ (Vancomycin, Amiodarone, Diazepam, Digoxin ฯลฯ)</option>
+    <optgroup label="⭐ ยาที่ใช้บ่อยใน Stroke Unit">
+      <option value="nicardipine">Nicardipine (Nicardia drip)</option>
+      <option value="rtpa">rt-PA (Alteplase)</option>
+      <option value="cordarone">Cordarone (Amiodarone)</option>
+      <option value="glycerosteril">10% Glycerosteril</option>
+      <option value="mgso4_50">50% Magnesium sulfate</option>
+      <option value="kcl40">Potassium chloride injection 40 mEq</option>
+    </optgroup>
+    <optgroup label="หมวดหมู่ยาทั่วไป">
+      <option value="vasopressor">🔥 Vasopressor (Norepinephrine, Dopamine, Dobutamine, Adrenaline)</option>
+      <option value="chemo_warm">🔥 เคมีบำบัดกลุ่มประคบอุ่น (Vincristine, Vinblastine, Etoposide, Cyclophosphamide ฯลฯ)</option>
+      <option value="oxaliplatin">🔥 Oxaliplatin (ห้ามประคบเย็น)</option>
+      <option value="variable">⚖️ Hyperosmolar/Irritant (Calcium, KCL, NaHCO3, Dextrose&gt;10%, TPN, Phenytoin, Paclitaxel)</option>
+      <option value="mannitol">🧊 Mannitol 20%</option>
+      <option value="anthracycline">🧊 เคมีบำบัดกลุ่ม Anthracycline (Doxorubicin, Idarubicin, Epirubicin)</option>
+      <option value="platinum">🧊 เคมีบำบัดอื่น (Cisplatin เข้มข้น, Mitomycin C, Dactinomycin)</option>
+      <option value="cold_general">🧊 ยาปฏิชีวนะ/ยานอนหลับ/ยาหัวใจ (Vancomycin, Amiodarone, Diazepam, Digoxin ฯลฯ)</option>
+    </optgroup>
   </select>
   <button class="btn btn-purple" onclick="autoDiagnose()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -647,6 +657,17 @@ function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>แก้ไขข้อมูล</div>
+
+    <!-- READ-ONLY: AI Analysis + Nursing Plan (หลักฐานย้อนหลัง) — วางไว้บนสุดให้เห็นทันที -->
+    <div id="e-ai-section" style="display:none;margin-bottom:16px;border:1.5px solid var(--sky-m);border-radius:var(--rl);padding:12px;background:linear-gradient(135deg,#EFF6FF,#F0FDF4)">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--sky-d)"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        <span style="font-size:13px;font-weight:700;color:var(--sky-d)">✓ หลักฐานผลวิเคราะห์ AI — บันทึกไว้แล้วเมื่อประเมินครั้งนี้</span>
+      </div>
+      <div id="e-ai-txt" style="background:var(--sur);border-radius:var(--r);padding:10px 12px;font-size:13px;color:#1E3A5F;line-height:1.7;margin-bottom:8px;white-space:pre-wrap;max-height:180px;overflow-y:auto"></div>
+      <div id="e-np-txt" style="background:var(--sur);border-radius:var(--r);padding:10px 12px;font-size:13px;color:var(--green);line-height:1.7;white-space:pre-wrap;max-height:220px;overflow-y:auto"></div>
+    </div>
+
     <div class="grid2" style="margin-bottom:8px">
       <div><label class="fl">HN</label><input class="fi" id="e-hn"></div>
       <div><label class="fl">ชื่อ-สกุล</label><input class="fi" id="e-nm"></div>
@@ -663,6 +684,7 @@ function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false
     <div style="margin-bottom:8px"><label class="fl">สารน้ำ/ยา</label><input class="fi" id="e-drugs"></div>
     <div style="margin-bottom:8px"><label class="fl">พยาบาล</label><input class="fi" id="e-nurse"></div>
     <div style="margin-bottom:14px"><label class="fl">หมายเหตุ</label><input class="fi" id="e-notes"></div>
+
     <div style="display:flex;gap:8px">
       <button class="btn btn-teal" onclick="confirmEdit()" style="flex:2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>บันทึก</button>
       <button class="btn btn-red" onclick="confirmDel()" style="flex:1">ลบ</button>
@@ -857,7 +879,7 @@ function autoDiagnose(){
 
   // Drug type: vesicant/vasopressor/hyperosmolar => Extravasation; none => Infiltration if no blood return
   if(drug!=='none'){
-    score.ext+=4; reasons.ext.push('ได้รับยา/สารน้ำที่มีความเสี่ยงต่อการเกิด Extravasation ('+COMPRESS_GUIDE[drug].label.replace(/[🔥🧊⚖️]/g,'').trim()+')');
+    score.ext+=4; reasons.ext.push('ได้รับยา/สารน้ำที่มีความเสี่ยงต่อการเกิด Extravasation ('+getDrugGuide(drug).label.replace(/[🔥🧊⚖️]/g,'').trim()+')');
   } else {
     score.inf+=2; reasons.inf.push('สารน้ำทั่วไป ไม่ทำลายเนื้อเยื่อ (Non-vesicant)');
   }
@@ -1027,7 +1049,11 @@ async function aiScan(b64) {
   var ctxParts=[];
   if(bloodEl&&bloodEl.value!=='unknown')ctxParts.push('Blood return: '+(bloodEl.value==='yes'?'มี':'ไม่มี'));
   if(skinEl&&skinEl.value!=='normal')ctxParts.push('ผิวหนัง: '+(skinEl.value==='warmred'?'ร้อน+แดง':'เย็น+ซีด'));
-  if(drugEl&&drugEl.value!=='none')ctxParts.push('ชนิดยา: '+COMPRESS_GUIDE[drugEl.value].label);
+  if(drugEl&&drugEl.value!=='none'){
+    var drugLabels={nicardipine:'Nicardipine',rtpa:'rt-PA (Alteplase)',cordarone:'Cordarone (Amiodarone)',glycerosteril:'10% Glycerosteril',mgso4_50:'50% Magnesium sulfate',kcl40:'Potassium chloride injection 40 mEq'};
+    var dName=drugLabels[drugEl.value]||drugEl.options[drugEl.selectedIndex].text;
+    ctxParts.push('ชนิดยา: '+dName+' ('+getDrugGuide(drugEl.value).label.replace(/[🔥🧊⚖️]/g,'').trim()+')');
+  }
   var ctxLine=ctxParts.length?('\n\nข้อมูลทางคลินิกเพิ่มเติม: '+ctxParts.join(', ')):'';
   var prompt = 'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้ เปรียบเทียบกับมาตรฐานทั้ง 3 scale (Phlebitis/Infiltration/Extravasation ตาม Gorski et al. Infusion Therapy Standards of Practice) แล้วระบุว่าน่าจะเป็นภาวะใดมากที่สุด โดยเน้นมาตรฐานที่ผู้ใช้เลือกไว้คือ '+typeNames[S.type]+' เป็นหลัก'+ctxLine+' ตอบภาษาไทยแบ่งเป็น 2 ส่วน:\n\n[วิเคราะห์]: (4-5 ประโยค) สัญญาณที่เห็น (สีผิว อุณหภูมิ บวม/ตุ่มน้ำ/เนื้อตาย) + ภาวะที่น่าจะเป็น (Phlebitis/Infiltration/Extravasation) พร้อมเหตุผลแยกโรค + Grade ที่ประเมิน (0-4) ตามมาตรฐาน '+typeNames[S.type]+' + ระดับความรุนแรง (ปกติ/น้อย/ปานกลาง/มาก หากเป็น Extravasation)\n\n[แผนพยาบาล]: ระบุ 8-10 ข้อแบบละเอียดครบถ้วน "จัดเต็ม" ตามมาตรฐานสากลและแนวปฏิบัติจริงของหน่วยงาน ต้องครอบคลุม: การหยุดสารน้ำ/ยาและการจัดการเบื้องต้น, การประคบร้อน/เย็นระบุชนิดยาที่เกี่ยวข้องและเหตุผล, Antidote เฉพาะยาถ้ามี (เช่น Hyaluronidase, Phentolamine, Dexrazoxane, Sodium thiosulfate), การทำแผลตามความรุนแรง (NSS, Hydrocortisone cream, Silicone dressing, Silver sulfadiazine), การยกแขน, การติดตามอาการ (ทุก 8 ชม.), การรายงานแพทย์, และการรายงานความเสี่ยงเข้าระบบโรงพยาบาลหาก Grade≥2 แต่ละข้อขึ้นต้นด้วย "- "';
   try {
@@ -1152,9 +1178,11 @@ function getRec(g,h,t){
 
   // Compress + Antidote drug guidance (Infiltration/Extravasation grade >= 1)
   if((t==='inf'||t==='ext') && g>=1){
-    var drugSel = window._dxDrug || (document.getElementById('dx-drug') && document.getElementById('dx-drug').value) || 'none';
-    var cg = COMPRESS_GUIDE[drugSel] || COMPRESS_GUIDE.none;
-    html+='<div class="info ip">💊 <strong>'+cg.label+'</strong><br>ตัวอย่างยา: '+cg.drugs+'<br><strong>วิธีประคบ:</strong> '+cg.method+(cg.antidote?'<br><strong>Antidote:</strong> '+cg.antidote:'')+'<br><em>'+cg.reason+'</em></div>';
+    var drugSelEl = document.getElementById('dx-drug');
+    var drugSel = window._dxDrug || (drugSelEl && drugSelEl.value) || 'none';
+    var cg = getDrugGuide(drugSel);
+    var drugNameShown = (drugSelEl && drugSel!=='none') ? drugSelEl.options[drugSelEl.selectedIndex].text : cg.drugs;
+    html+='<div class="info ip">💊 <strong>'+cg.label+'</strong><br>ยาที่เลือก: '+drugNameShown+'<br><strong>วิธีประคบ:</strong> '+cg.method+(cg.antidote?'<br><strong>Antidote:</strong> '+cg.antidote:'')+'<br><em>'+cg.reason+'</em></div>';
   }
 
   // Wound care protocol for Extravasation grade >= 3 (moderate/severe)
@@ -1260,6 +1288,7 @@ function renderHist(){
   el.innerHTML=list.slice(0,80).map(r=>{
     var g=parseInt(r.grade)||0,ri=S.history.indexOf(r);
     var imgHtml=r._img?'<img src="data:image/jpeg;base64,'+r._img+'" class="hist-img" alt="IV">':'';
+    var aiHint=(r.aiTxt||r.npTxt)?'<span style="font-size:10px;color:var(--sky-d);font-weight:600">🤖 มีผลวิเคราะห์ · แตะดู</span>':'';
     return '<div class="hi" onclick="openEdit('+ri+')">'
       +imgHtml
       +'<div class="hvip" style="background:'+GBG[g]+';color:'+GTC[g]+'">'+g+'</div>'
@@ -1267,6 +1296,7 @@ function renderHist(){
         +'<div style="font-size:13px;font-weight:600">'+esc(r.name||'-')+' <span style="font-weight:400;color:var(--txt3);font-size:11px">'+esc(r.hn||'')+'</span></div>'
         +'<div style="display:flex;align-items:center;gap:5px;margin-top:2px"><span class="type-chip '+(tc[r.type]||'tc-phl')+'">'+esc(r.type||'')+'</span><span style="font-size:11px;color:var(--txt2)">'+esc(r.ward||'-')+'</span></div>'
         +'<div style="font-size:10px;color:var(--txt3);margin-top:2px">'+formatTs(r.ts||r._ts||'')+(r._synced?' · <span style="color:var(--green-m)">✓ Sheets</span>':' · <span style="color:var(--amber-m)">⏳ Local</span>')+'</div>'
+        +(aiHint?'<div style="margin-top:2px">'+aiHint+'</div>':'')
       +'</div>'
       +'<button class="hact" onclick="event.stopPropagation();openEdit('+ri+')" title="แก้ไข"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
       +'</div>';
@@ -1282,6 +1312,15 @@ function openEdit(i){
   document.getElementById('e-type').value=r.type||'Phlebitis'; document.getElementById('e-grade').value=r.grade||'0';
   document.getElementById('e-syms').value=r.syms||''; document.getElementById('e-drugs').value=r.drugs||'';
   document.getElementById('e-nurse').value=r.nurse||''; document.getElementById('e-notes').value=r.notes||'';
+  // Show saved AI analysis + nursing plan as evidence (read-only)
+  var aiSec=document.getElementById('e-ai-section');
+  if(r.aiTxt || r.npTxt){
+    document.getElementById('e-ai-txt').textContent = r.aiTxt ? ('🔬 ผลวิเคราะห์: '+r.aiTxt) : '';
+    document.getElementById('e-np-txt').textContent = r.npTxt ? ('📋 แผนการพยาบาล:\n'+r.npTxt) : '';
+    aiSec.style.display='block';
+  } else {
+    aiSec.style.display='none';
+  }
   document.getElementById('emod').classList.add('on');
   if(navigator.vibrate)navigator.vibrate(15);
 }
@@ -1329,6 +1368,30 @@ async function confirmDel(){
   }else{toast('ลบแล้ว ✓','green');}
 }
 document.getElementById('emod').addEventListener('click',function(e){if(e.target===this)closeMod();});
+
+// ═══════════════════════
+//  DRUG SHORTCUT MAP — ยาเฉพาะที่ใช้บ่อยใน Stroke Unit
+//  แม็พไปยังหมวดหมู่ COMPRESS_GUIDE ที่ถูกต้อง
+// ═══════════════════════
+var DRUG_TO_CATEGORY = {
+  nicardipine:'cold_general',
+  rtpa:'thrombolytic',
+  cordarone:'cold_general',
+  glycerosteril:'variable',
+  mgso4_50:'cold_general',
+  kcl40:'variable'
+};
+function resolveDrugKey(key){ return DRUG_TO_CATEGORY[key] || key; }
+function getDrugGuide(key){ return COMPRESS_GUIDE[resolveDrugKey(key)] || COMPRESS_GUIDE.none; }
+
+// เพิ่มหมวด Thrombolytic (ยาละลายลิ่มเลือด) — ไม่มี Antidote จำเพาะ
+COMPRESS_GUIDE.thrombolytic = {
+  label:'⚠️ ยาละลายลิ่มเลือด (Thrombolytic) — High-Alert Drug',
+  drugs:'rt-PA (Alteplase)',
+  method:'ไม่มีข้อมูลแนะนำวิธีประคบร้อน/เย็นที่ชัดเจนในเอกสารอ้างอิง ให้ประเมินอาการทางคลินิกเป็นหลัก และปรึกษาแพทย์ทันทีหากสงสัย Extravasation',
+  antidote:'ไม่มี Antidote จำเพาะ — เฝ้าระวังภาวะเลือดออกบริเวณที่ให้ยาอย่างใกล้ชิด',
+  reason:'เป็นยาความเสี่ยงสูง (High-Alert Medication) ที่ต้องติดตามอาการอย่างใกล้ชิดเป็นพิเศษ'
+};
 
 // ═══════════════════════
 //  CQI — Continuous Quality Improvement
