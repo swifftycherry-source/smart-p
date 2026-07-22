@@ -569,10 +569,15 @@ select.fi{cursor:pointer}
 </div>
 <div class="card">
   <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Apps Script (วางใน Sheet นี้)</div>
-  <div class="info ia" style="font-size:12px;margin-bottom:8px">Extensions → Apps Script → Deploy → Web App (Anyone)</div>
+  <div class="info ib2" style="font-size:12px;margin-bottom:6px">🤖 <strong>เปิดใช้งาน AI วิเคราะห์ภาพ:</strong> แก้ ANTHROPIC_API_KEY บรรทัดแรกของโค้ดเป็น Key ของคุณ (ขอได้ที่ console.anthropic.com) — AI จะวิเคราะห์ภาพและเขียนแผนการพยาบาลให้อัตโนมัติ (ผลลัพธ์ดูย้อนหลังได้ในหน้าประวัติ) <em>หากเป็นการนำแอปไปแจกใช้ต่อที่อื่นและไม่ใส่ Key ไว้ แอปจะยังใช้งานได้ปกติ เพียงให้กรอกอาการเองแทน</em></div>
+  <div class="info ia" style="font-size:12px;margin-bottom:8px">Extensions → Apps Script → วางโค้ด → (ไม่บังคับ) แก้ API Key → Deploy → Web App (Anyone)</div>
   <div class="code-box">
     <button class="cbtn2" onclick="cpCode()">📋 คัดลอก</button>
-    <pre id="gascode">function doPost(e) {
+    <pre id="gascode">// ⚠️ ใส่ Anthropic API Key ของคุณตรงนี้ (จาก console.anthropic.com)
+// Apps Script เป็นโค้ดส่วนตัว ไม่มีใครเห็น จึงใส่ตรงนี้ได้อย่างปลอดภัย
+var ANTHROPIC_API_KEY = 'YOUR_API_KEY_HERE';
+
+function doPost(e) {
   try {
     var d = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.openById(
@@ -592,38 +597,71 @@ select.fi{cursor:pointer}
         .setFontColor('#fff');
       sh.setFrozenRows(1);
     }
-    if (d._action==='update' && d._ri) {
-      sh.getRange(parseInt(d._ri)+1,2,1,17)
-        .setValues([[d.ts,d.type,d.hn,d.name,
+
+    // ── AI Vision Proxy (แก้ปัญหา CORS/API Key เมื่อเรียกจาก GitHub Pages) ──
+    if (d._action === 'ai_vision') {
+      return callClaudeVision(d.image, d.prompt);
+    }
+
+    // ── Find row by ID (แม่นยำกว่า Row Index เมื่อมีการลบ/เรียงข้อมูล) ──
+    function findRowById(id) {
+      if (!id) return -1;
+      var data = sh.getDataRange().getValues();
+      for (var i = 1; i < data.length; i++) {
+        if (String(data[i][0]) === String(id)) return i + 1;
+      }
+      return -1;
+    }
+
+    if (d._action==='update' && d._id) {
+      var row = findRowById(d._id);
+      if (row < 1 && d._ri) row = parseInt(d._ri) + 1; // fallback
+      if (row > 0) {
+        sh.getRange(row,2,1,16).setValues([[d.ts,d.type,d.hn,d.name,
           d.ward,d.bed,d.site,d.grade,d.gradeLbl,
           d.syms,d.hours,d.drugs,d.nurse,d.notes,
-          d.aiTxt,d.npTxt,d.img||'']]);
-      return ok({action:'updated'});
+          d.aiTxt,d.npTxt]]);
+        return ok({action:'updated', row:row});
+      }
+      return ok({action:'not_found'});
     }
-    if (d._action==='delete'&&d._ri) {
-      sh.deleteRow(parseInt(d._ri)+1);
-      return ok({action:'deleted'});
+    if (d._action==='delete' && d._id) {
+      var row = findRowById(d._id);
+      if (row < 1 && d._ri) row = parseInt(d._ri) + 1; // fallback
+      if (row > 0) {
+        sh.deleteRow(row);
+        return ok({action:'deleted', row:row});
+      }
+      return ok({action:'not_found'});
     }
+
     var id='SMARTP-'+Date.now();
     sh.appendRow([id,d.ts,d.type,d.hn,d.name,
       d.ward,d.bed,d.site,d.grade,d.gradeLbl,
       d.syms,d.hours,d.drugs,d.nurse,d.notes,
-      d.aiTxt,d.npTxt,d.img||'']);
+      d.aiTxt,d.npTxt,d.img?'มีรูปภาพ ✓':'']);
+    var newRow = sh.getLastRow();
     // Insert image in col 18 if exists
     if (d.img && d.img.length > 100) {
       try {
         var imgData = Utilities.base64Decode(d.img);
-        var blob = Utilities.newBlob(imgData,'image/jpeg','iv_site.jpg');
-        var folder = DriveApp.getRootFolder();
+        var blob = Utilities.newBlob(imgData,'image/jpeg','SMARTP_'+id+'.jpg');
+        var folders = DriveApp.getFoldersByName('SMART-P Images');
+        var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder('SMART-P Images');
         var file = folder.createFile(blob);
-        file.setSharing(DriveApp.Access.ANYONE,DriveApp.Permission.VIEW);
-        var imgUrl = 'https://drive.google.com/uc?id='+file.getId();
-        sh.getRange(sh.getLastRow(),18).setValue('=IMAGE("'+imgUrl+'",4,60,80)');
-      } catch(imgErr){}
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);
+        var imgUrl = 'https://drive.google.com/uc?export=view&id='+file.getId();
+        sh.getRange(newRow,18).setFormula('=IMAGE("'+imgUrl+'",4,80,100)');
+        sh.setRowHeight(newRow, 85);
+      } catch(imgErr){
+        var cell = sh.getRange(newRow,18);
+        cell.setValue('มีรูปภาพ ✓'); cell.setNote('BASE64_IMG:'+d.img);
+      }
     }
-    return ok({id:id,row:sh.getLastRow()});
+    return ok({id:id,row:newRow});
   } catch(err){return err_(err.toString());}
 }
+
 function doGet(e){
   try{
     var ss=SpreadsheetApp.openById(
@@ -633,6 +671,43 @@ function doGet(e){
     return ok({rows:sh.getDataRange().getValues()});
   }catch(err){return err_(err.toString());}
 }
+
+// ── เรียก Claude Vision API แทน Client (ปลอดภัย ไม่ติด CORS) ──
+function callClaudeVision(base64Image, prompt) {
+  try {
+    if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_API_KEY_HERE') {
+      return err_('กรุณาใส่ ANTHROPIC_API_KEY ในโค้ด Apps Script ก่อนใช้งาน AI สแกน');
+    }
+    var payload = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1400,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64Image } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    };
+    var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    var data = JSON.parse(res.getContentText());
+    if (data.error) return err_('Claude API: ' + data.error.message);
+    var text = (data.content || []).filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+    return ok({ text: text });
+  } catch(err) {
+    return err_('AI Vision error: ' + err.toString());
+  }
+}
+
 function ok(d){return ContentService.createTextOutput(JSON.stringify(Object.assign({ok:true},d))).setMimeType(ContentService.MimeType.JSON);}
 function err_(m){return ContentService.createTextOutput(JSON.stringify({ok:false,error:m})).setMimeType(ContentService.MimeType.JSON);}</pre>
   </div>
@@ -1044,6 +1119,10 @@ function onImg(ev) {
 
 async function aiScan(b64) {
   S.aiTxt=''; S.npTxt='';
+  if(!S.gsUrl){
+    toast('📷 บันทึกภาพแล้ว — กรอกอาการด้านล่างเพื่อวินิจฉัยได้เลย','blue');
+    return;
+  }
   var typeNames={phl:'Phlebitis (VIP Scale)',inf:'Infiltration Scale',ext:'Extravasation Scale'};
   var bloodEl=document.getElementById('dx-blood'), skinEl=document.getElementById('dx-skin'), drugEl=document.getElementById('dx-drug');
   var ctxParts=[];
@@ -1057,16 +1136,18 @@ async function aiScan(b64) {
   var ctxLine=ctxParts.length?('\n\nข้อมูลทางคลินิกเพิ่มเติม: '+ctxParts.join(', ')):'';
   var prompt = 'คุณเป็นพยาบาลผู้เชี่ยวชาญ IV therapy วิเคราะห์ภาพผิวหนัง IV site นี้ เปรียบเทียบกับมาตรฐานทั้ง 3 scale (Phlebitis/Infiltration/Extravasation ตาม Gorski et al. Infusion Therapy Standards of Practice) แล้วระบุว่าน่าจะเป็นภาวะใดมากที่สุด โดยเน้นมาตรฐานที่ผู้ใช้เลือกไว้คือ '+typeNames[S.type]+' เป็นหลัก'+ctxLine+' ตอบภาษาไทยแบ่งเป็น 2 ส่วน:\n\n[วิเคราะห์]: (4-5 ประโยค) สัญญาณที่เห็น (สีผิว อุณหภูมิ บวม/ตุ่มน้ำ/เนื้อตาย) + ภาวะที่น่าจะเป็น (Phlebitis/Infiltration/Extravasation) พร้อมเหตุผลแยกโรค + Grade ที่ประเมิน (0-4) ตามมาตรฐาน '+typeNames[S.type]+' + ระดับความรุนแรง (ปกติ/น้อย/ปานกลาง/มาก หากเป็น Extravasation)\n\n[แผนพยาบาล]: ระบุ 8-10 ข้อแบบละเอียดครบถ้วน "จัดเต็ม" ตามมาตรฐานสากลและแนวปฏิบัติจริงของหน่วยงาน ต้องครอบคลุม: การหยุดสารน้ำ/ยาและการจัดการเบื้องต้น, การประคบร้อน/เย็นระบุชนิดยาที่เกี่ยวข้องและเหตุผล, Antidote เฉพาะยาถ้ามี (เช่น Hyaluronidase, Phentolamine, Dexrazoxane, Sodium thiosulfate), การทำแผลตามความรุนแรง (NSS, Hydrocortisone cream, Silicone dressing, Silver sulfadiazine), การยกแขน, การติดตามอาการ (ทุก 8 ชม.), การรายงานแพทย์, และการรายงานความเสี่ยงเข้าระบบโรงพยาบาลหาก Grade≥2 แต่ละข้อขึ้นต้นด้วย "- "';
   try {
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-          {type:'text',text:prompt}
-        ]}]})
+    var res=await fetch(S.gsUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({_action:'ai_vision', image:b64, prompt:prompt})
     });
     var data=await res.json();
-    var txt=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+    if(!data.ok){
+      // AI Vision is an optional feature — quietly fall back, don't alarm the user
+      toast('📷 บันทึกภาพแล้ว — กรอกอาการด้านล่างเพื่อวินิจฉัยได้เลย','blue');
+      return;
+    }
+    var txt=data.text||'';
     if(txt){
       var parts=txt.split('[แผนพยาบาล]');
       S.aiTxt=parts[0].replace('[วิเคราะห์]','').trim();
@@ -1084,8 +1165,13 @@ async function aiScan(b64) {
       }
       autoFill(S.aiTxt);
       toast('AI วิเคราะห์เสร็จ ✓','green');
+    } else {
+      toast('📷 บันทึกภาพแล้ว — กรอกอาการด้านล่างเพื่อวินิจฉัยได้เลย','blue');
     }
-  } catch(e){toast('AI ไม่ได้ กรอกเองได้ค่ะ','amber');}
+  } catch(e){
+    // Network/offline — still fine, manual assessment path continues to work
+    toast('📷 บันทึกภาพแล้ว — กรอกอาการด้านล่างเพื่อวินิจฉัยได้เลย','blue');
+  }
 }
 
 function autoFill(t){
