@@ -1326,7 +1326,7 @@ async function saveRecord(){
       var resp=await fetch(S.gsUrl,{
         method:'POST',
         mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify(payload)
       });
       S.history[0]._synced=true;
@@ -1425,7 +1425,7 @@ async function confirmEdit(){
   if(S.gsUrl){
     try{
       await fetch(S.gsUrl,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify(Object.assign({},r,{_action:'update',_id:r._id,_ri:r._ri}))
       });
       r._synced=true;
@@ -1446,7 +1446,7 @@ async function confirmDel(){
   if(S.gsUrl&&deletedId){
     try{
       await fetch(S.gsUrl,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify({_action:'delete',_id:deletedId,_ri:deletedRi})
       });
       toast('ลบออกจาก Sheets แล้ว ✓','green');
